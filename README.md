@@ -1,0 +1,2 @@
+# elasticsearch-notes
+Just Notes
