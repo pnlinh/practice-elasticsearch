@@ -188,7 +188,7 @@ PUT /anyname
         "price": {
           "type": "double",
         },
-        "qty": {
+        "quantity": {
           "type": "integer",
         },
         "description": {
@@ -273,7 +273,7 @@ PUT ecommerce/product/1001
 {
   "name": "Zend 2",
   "price": 40.00,
-  "qty": 1,
+  "quantity": 1,
   "categories": [
     { "name": "Software" }  
   ],
@@ -339,7 +339,7 @@ POST /ecommerce/product/_bulk
 POST /ecommerce/product/_bulk
 {"delete": {"_id": "1" }}
 {"update": {"_id": "1002" }}
-{"doc": {"qty": "22" }}
+{"doc": {"quantity": "22" }}
 ```
 
 **Ensure:**
@@ -616,6 +616,64 @@ GET /ecommerce/product/_search
   "query": {
     "match_phrase": {
       "name": "monkey bald"
+    }
+  }
+}
+```
+
+## Term Queries
+
+Searches fields for **exact** values.
+
+- Doc with value with: "!" will not work, the default analyzer will not be found, nor an exact match.
+- String fields are analyzed by default
+- Not Analyzed before Queries
+
+To avoid these problems we do not Analyze field values with `not_analyzed`.
+
+### Single Term
+
+> Use `term` (Non-Plural)
+
+```
+GET /ecommerce/product/_search
+{
+  "query": {
+    "term": {
+      "status": "active"
+    }
+  }
+}
+```
+
+### Multiple Terms
+
+> Use `terms` (Plural)
+
+```
+GET /ecommerce/product/_search
+{
+  "query": {
+    "terms": {
+      "status": ["active", "incative"]
+    }
+  }
+}
+```
+
+### Range Terms
+
+> Use `terms` (Plural)
+
+```
+GET /ecommerce/product/_search
+{
+  "query": {
+    "range": {
+      "quantity": {
+        "gte": 1,
+        "lte": 10
+      }
     }
   }
 }
