@@ -1,4 +1,4 @@
-# elasticsearch-notes
+# Elasticsearch Notes
 
 This is from a few weeks of study, trial and error. As well as a great course by and some of a video course to cover some sections.
 
@@ -121,6 +121,29 @@ These are similar to SQL row types.
         - YYYY-MM-DD 
         - YYYY-MM-DDTHH:MM:SSZ
         - 130000000000 (Epoch)
-        - Multiple Dates eg: YYYY-MM-DD HH:MM:SS || YYYY-MM-DD || Epoch
+        - Multiple Dates can use a Boolean
+          - YYYY-MM-DD HH:MM:SS || YYYY-MM-DD || Epoch
+    - Boolean
+       - Valid: false, "false", "off", "no", "0", "", 0.0
+    - Binary: Base64 Encoded, Not Searchable
+- **Complex Data Types** 
+  - **IMPORTANT** Elastic search flattens everything before storing data so you can lose associations as values are
+    not sorted. A nested might object would list as: `name.nested.age`. To perform this you must map a `Nested Datatype`,
+    which makes all the values indexed a single document. 
+    - *These can cause conflicts* by mis-aligning a flattened datatype.
+    - Apache Lucene does not know what inner-objects are with JSON and Arrays.
+  - JSON Objects
+  - Array 
+  - Geo Datatype (Lat/long pairs within json), eg: 
+    - As String: `{"location": "999,999"}` 
+    - As JSON:   `{"location": {"lat": 999, "long:999"}` 
+    - Two other variations that i don't feel are necessary
+  - GeoShapes
+    - LineString, Polgygon, not very interested.
+  - Specialized IPv4 (Long Values)
+  - Completion; "Prefix Suggester", FST (Finate State Transducer) - you probably don't need to use this.
+  - Token
+  - Attachment
+  
     
   
