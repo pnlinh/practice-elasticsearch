@@ -2,7 +2,8 @@
 
 This is documentation from a few weeks of study, trial and error. My primary notes are locked in Atlassian Confluence which won't be taking out (Company Reasons).  Therefore, these are notes based off this fine course at [https://www.udemy.com/elasticsearch-complete-guide](https://www.udemy.com/elasticsearch-complete-guide). 
 
-Disclaimer: I have already gone through the following yet couldn't remember it all so suddently:
+Disclaimer: I have already gone through the following yet couldn't remember it swiftly as I liked, having to integrate this in some guys custom framework has made this incredibly difficult. :\
+
 - [Elasticsearch Reference 5.x](https://www.elastic.co/guide/en/elasticsearch/reference/5.x/index.html)
 - [Elasticsearch Clients](https://www.elastic.co/guide/en/elasticsearch/client/index.html)
 - [Plugins and Integrations](https://www.elastic.co/guide/en/elasticsearch/plugins/current/index.html) (Only parts of)
