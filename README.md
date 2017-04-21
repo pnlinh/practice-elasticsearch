@@ -324,3 +324,42 @@ POST /ecommerce/products/_bulk
 {"index":{"_id":"1003"}}
 {"name":"PIGLET","price":20.21}
 ```
+
+## Batch Multi-Methods
+
+- The Below looks tricky, but Delete has no Document Data.
+- Update DOES have document data, thats why below it we provide the `doc` info to update.
+
+```
+POST /ecommerce/products/_bulk
+{"delete": {"_id": "1" }}
+{"update": {"_id": "1002" }}
+{"doc": {"qty": "22" }}
+```
+
+**Ensure:**
+
+```
+GET /ecommerce/products/1
+# Expected: Founds should be false
+```
+
+```
+GET /ecommerce/products/1003
+# Expected: Qty is 22
+```
+
+## Bulk Mutli-Method Alternative
+
+```
+POST _bulk
+{"update": {"_id": "1002", "_index": "ecommerce", "_type": "products"}}
+{"doc": {"quantity": 10}}
+```
+
+**Ensure:**
+
+```
+GET ecommerce/products/1002
+# Expected: Qty is 10
+```
