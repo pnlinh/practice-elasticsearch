@@ -964,3 +964,67 @@ GET /_all/product/_search?q=monkey
 ```
 GET /_all/_search?q=monkey
 ```
+
+# Fuzzy Searches
+Fuzziness is the # of characters allowed to be different. Append a tidle with an integer, eg: `~3`, the default is `2`. 
+
+**A fuzziness greater than `2` is too expensive for Apache Lucene.**
+
+**Using REST**
+```
+GET /ecommerce/product/_search?q=past~1
+
+# Except: Results with "pasta" or "paste"
+```
+
+**Using Query DSL**
+
+Indentical as the above REST query
+
+```
+GET /ecommerce/product/_search
+{
+  "query": {
+    "match": {
+      "name": {
+        "query": "past", 
+        "fuzziness": 1
+      }
+    }
+  }
+}
+```
+
+
+**Below, Elastic will determine the most appropriate edit distance based on the query.**
+
+The Auto Fuzziness:
+- Query Length of `0-2`: exact match
+- Query Length of `3-5`: 1 edit distance
+- Query Length of `5+`: 2 fuzziness
+
+```
+GET /ecommerce/product/_search
+{
+  "query": {
+    "match": {
+      "name": {
+        "query": "past", 
+        "fuzziness": "AUTO"
+      }
+    }
+  }
+}
+```
+
+## Performance Details
+
+Lucense has a fast Fuzzy query, but unique terms in an index makes it slower.
+DFA searches are naturally slower than a binary search and process a larger number of terms.
+
+A match query with Lucene is much faster doing a binary lookup for internally stored items.
+
+- Fuzzy queries compare to terms in an index.
+- **The analyzed terms are searched, not the visible documents.**
+- **This can lead to confusing results.**
+
