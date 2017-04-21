@@ -1,6 +1,12 @@
 # Elasticsearch Notes
 
-This is from a few weeks of study, trial and error. As well as a great course by and some of a video course to cover some sections.
+This is documentation from a few weeks of study, trial and error. My primary notes are locked in Atlassian Confluence which I won't be taking out (Company Reasons).  Therefore, these are notes based off this fine course at [https://www.udemy.com/elasticsearch-complete-guide](https://www.udemy.com/elasticsearch-complete-guide). 
+
+Disclaimer: I have already gone through the following yet couldn't remember it all so suddently:
+- [Elasticsearch Reference 5.x](https://www.elastic.co/guide/en/elasticsearch/reference/5.x/index.html)
+- [Elasticsearch Clients](https://www.elastic.co/guide/en/elasticsearch/client/index.html)
+- [Plugins and Integrations](https://www.elastic.co/guide/en/elasticsearch/plugins/current/index.html) (Only parts of)
+- Another that I cannot find. The point is, there is so much to read it's easy to miss a small portion that I needed some extra assistance. This is a very large and powerful system. Many notes are reptitive of what I've written down, yet It will help me memorize it to write it down again.
 
 [TOC]
 
