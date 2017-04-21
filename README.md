@@ -467,7 +467,7 @@ This can get very complex, so the outline this is an outline:
  - geo_point (lat/lon pair)
  - geoshapoe (pt, ln, cir, poly, etc)
   
-   
+
 # Sample Queries
 
 To search via query use `_search` and `?q=`
@@ -678,3 +678,103 @@ GET /ecommerce/product/_search
   }
 }
 ```
+
+### Other Term Level Queries
+
+#### Prefix
+Search for fields that starts with  a prefix, eg `mon` (in my case, short for monkey)
+```
+GET /ecommerce/product/_search
+{ 
+  "query": {
+    "prefix" : { "name" : "mon" }
+  }
+}
+```
+
+#### Regexp/Wildcard
+These can be slow, use with caution.
+
+There are more advanced flags at [Regexp Queries](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-regexp-query.html)
+
+**The `?` matches any next character**
+```
+GET /ecommerce/product/_search
+{
+    "query": {
+        "regexp":{
+            "name": "monk.?y"
+        }
+    }
+}
+
+# Expected: Received 2 results
+```
+
+
+**The `*` matches any character more than once. **
+
+(Cannot use at the beginning of search)
+```
+GET /ecommerce/product/_search
+{
+    "query": {
+        "regexp":{
+            "name": "monk.*"
+        }
+    }
+}
+
+# Expected: Received 2 results
+```
+
+#### Exists
+
+```
+GET /ecommerce/product/_search
+{
+    "query": {
+        "exists" : { 
+          "field" : "user" 
+        }
+    }
+}
+
+# Expected: 0 Results
+```
+
+#### Missing
+Depracated for `expected` in 5.3, example using Exists in this fashion:
+
+```
+GET /ecommerce/product/_search
+{
+    "query": {
+        "bool": {
+            "must_not": {
+                "exists": {
+                    "field": "user"
+                }
+            }
+        }
+    }
+}
+```
+
+or use `must` rather than `must_not`
+
+```
+GET /ecommerce/product/_search
+{
+    "query": {
+        "bool": {
+            "must": {
+                "exists": {
+                    "field": "user"
+                }
+            }
+        }
+    }
+}
+```
+
