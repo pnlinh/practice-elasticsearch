@@ -878,5 +878,89 @@ For even more, see [Compound Queries](https://www.elastic.co/guide/en/elasticsea
 
 # Search Across Index & Mapping Types
 
+Alright, toss this in with a little nested ingredients.
 
+Behind the scenes, we did not create a mapping or index in advanced, this was created via Dynamic datatypes are inferring by Dynamic mapping.
 
+## Create a Dynamic Index/Mapping Record
+```
+PUT /myfoodblog/recipe/1
+{
+  "name": "Pasta Quattro Formaggi",
+  "description": "First boil pasta, toss it around, whip some cheese on that mother",
+  "ingredients": [{
+    "name": "Pasta",
+    "amount": "500g"
+  }, {
+    "name": "Fontina Cheese",
+    "amount": "100g"
+  }, {
+    "name": "Parmesan Cheese",
+    "amount": "100g"
+  }, {
+    "name": "Romano Cheese",
+    "amount": "100g"
+  }, {
+    "name": "Gorgonzalo Cheese",
+    "amount": "100g"
+  }]
+}
+```
+
+## Ensure the Indices were created
+```
+GET /_cat/indices?v
+
+# Expected: myfoodblog with docs.count of 1
+```
+
+## Ensure the Mappings were created
+```
+GET /myfoodblog
+
+# Expected: A list of mappings (Probably Strings and Keywords for 5.3)
+```
+
+## Search Multi-Index
+Notice the Indice `ecommerce,myfoodblog`
+```
+GET /ecommerce,myfoodblog/product/_search?q=pasta
+
+# Expected: 10 Hits, only from ecommerce though.
+```
+
+## Search Multi-Mappings
+The Default return size is 10, so set `size=15`. Notices the `product,recipe`.
+```
+GET /ecommerce,myfoodblog/product,recipe/_search?q=pasta&size=15
+
+# Expected: 11 Hits, ecommerce and myfoodblog (myfoodblog at the bottom)
+```
+
+## Excluding Items
+
+Similar to examples far above we can use the `+` and `-` symbols.
+
+Below, the `+` symbol is interpreted as a `space`, so it's url encoded as `%2B`. 
+
+@TODO: This fails in 5.3
+```
+GET /-ecommerce,%2Bmyfoodblog/product,recipe/_search?q=paste
+```
+
+## Search for All Types
+
+Any type will match within the ecommerce index
+```
+GET /ecommerce/_search?q=monkey
+```
+
+## Search All Indexes, Specified Types
+```
+GET /_all/product/_search?q=monkey
+```
+
+## Search All Indexes, All Types
+```
+GET /_all/_search?q=monkey
+```
