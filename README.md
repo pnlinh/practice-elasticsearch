@@ -318,7 +318,7 @@ Batch will do 1 network process rather than one import per call, thus saving ton
 - .. Repeat ..
 
 ```
-POST /ecommerce/products/_bulk
+POST /ecommerce/product/_bulk
 {"index":{"_id":"1002"}}
 {"name":"PIGLET","price":20.21}
 {"index":{"_id":"1003"}}
@@ -331,7 +331,7 @@ POST /ecommerce/products/_bulk
 - Update DOES have document data, thats why below it we provide the `doc` info to update.
 
 ```
-POST /ecommerce/products/_bulk
+POST /ecommerce/product/_bulk
 {"delete": {"_id": "1" }}
 {"update": {"_id": "1002" }}
 {"doc": {"qty": "22" }}
@@ -340,12 +340,12 @@ POST /ecommerce/products/_bulk
 **Ensure:**
 
 ```
-GET /ecommerce/products/1
+GET /ecommerce/product/1
 # Expected: Founds should be false
 ```
 
 ```
-GET /ecommerce/products/1003
+GET /ecommerce/product/1003
 # Expected: Qty is 22
 ```
 
@@ -360,6 +360,6 @@ POST _bulk
 **Ensure:**
 
 ```
-GET ecommerce/products/1002
+GET ecommerce/product/1002
 # Expected: Qty is 10
 ```
