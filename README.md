@@ -278,7 +278,7 @@ PUT ecommerce/product/1001
     { "name": "Software" }  
   ],
   "tags": [ "zend framework", "php", "zf2", "zf", "programming" ]
-  
+ 
 }
 ```
 
@@ -322,12 +322,15 @@ Batch will do 1 network process rather than one import per call, thus saving ton
 - Insert the data in the second row
 - .. Repeat ..
 
+## MUST Insert this if you follow examples
 ```
 POST /ecommerce/product/_bulk
 {"index":{"_id":"1002"}}
 {"name":"monkey - fluffy","price":20.21,"status":"active", "description":"Indeed, this precious little critter is healthy and in good shape."}
 {"index":{"_id":"1003"}}
 {"name":"monkey - bald","price":22.21,"status":"disabled", "description":"This primate has gotten old and lacks hair, he is quite an odd fellow."}
+{"index":{"_id":"1004"}}
+{"name":"monkey - momma","price":31.11,"status":"active", "description":"The mother of all monkeys."}
 ```
 
 ## Batch Multi-Methods
@@ -384,8 +387,11 @@ This can get very complex, so the outline this is an outline:
 - Query Types
   - Full Text
   - Terms
-  - Leaf & Compount
-  - Compount
+  - **Leaf**
+    - Look for a particular value in a particular field, such as the `match`, `term` or `range` queries. These queries can be used by themselves.
+   - **Compound**
+      - Wrap other compound or Leaf queries, either to combine their results and scores, to change their behaviour, or to switch from query to filter context. 
+      - In laymans terms, It's like doing a few Leaf queries in one, for example you could search a `boolean` that has `must_match` with two `term` nested in it.
   
  ## Elastic Search Calculates a Score
  - Ranks Documents per query
@@ -777,4 +783,100 @@ GET /ecommerce/product/_search
     }
 }
 ```
+
+# Compound Queries
+
+> Compound queries wrap other compound or leaf queries, either to combine their results and scores, to change their behaviour, or to switch from query to filter context.
+
+**Conditions in the `must` clause must all be `true`.**
+
+```
+GET /ecommerce/product/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {"match": {"name": "monkey"} },
+        {"match": {"name": "bald"} }
+      ]
+    }
+  }
+}
+
+# Expect: 1 Result
+```
+
+**Conditions in the `must_not` clause must all be `false`.**
+
+```
+GET /ecommerce/product/_search
+{
+  "query": {
+    "bool": {
+      "must_not": [
+        {"match": {"name": "monkey"} },
+        {"match": {"name": "bald"} }
+      ]
+    }
+  }
+}
+
+# Expect: 5 Results
+```
+
+**This must have a monkey, but must not have bald in the `name` field**.
+```
+GET /ecommerce/product/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {"match": {"name": "monkey"} }
+      ],
+      "must_not": [
+        {"match": {"name": "bald"} }
+      ]
+    }
+  }
+}
+
+# Expect: 1 Results
+```
+
+**Should will increase the relevent value if it's more relevant** (Behaves like a logical OR).
+
+- `should` will `boost` results below and not exclude them by like `must_not` does.
+Should is optional, but when used documents that match better will rank it higher. For example, 
+- With out three monkey records: `money fluffy`, `monkey bald` and `monkey momma`, the order is:  
+  - `monkey - bald`
+  - `monkey - mama`
+  - `monkey - fluffly`
+```
+GET /ecommerce/product/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        {"match": {"name": "monkey"} }
+      ],
+      "should": [
+        {"match": {"name": "bald"} }
+      ]
+    }
+  }
+}
+
+# Expect: 1 Results
+```
+
+## More Compound Queries
+
+- We can use `_score` to boost popularity or better search relevance.
+- `_boosting` can reduce the score.
+
+For even more, see [Compound Queries](https://www.elastic.co/guide/en/elasticsearch/reference/current/compound-queries.html)
+
+# Search Across Index & Mapping Types
+
+
 
