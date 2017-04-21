@@ -191,6 +191,9 @@ PUT /anyname
         "qty": {
           "type": "integer",
         },
+        "description": {
+          "type": "text"
+        }
         "categories": {
           "type": "nested",   <--- This isn't neessary, but for many fields in a nested item sure.
           "properties": {
@@ -311,6 +314,8 @@ Batch will do 1 network process rather than one import per call, thus saving ton
 
 ## Batch Insert  
 
+**Do this if you decide to test some samples below**
+
 > It's not pretty JSON for bulk
 
 - Insert all the meta data in the first JSON row
@@ -320,9 +325,9 @@ Batch will do 1 network process rather than one import per call, thus saving ton
 ```
 POST /ecommerce/product/_bulk
 {"index":{"_id":"1002"}}
-{"name":"PIGLET","price":20.21}
+{"name":"monkey - fluffy","price":20.21,"status":"active", "description":"Indeed, this precious little critter is healthy and in good shape."}
 {"index":{"_id":"1003"}}
-{"name":"PIGLET","price":20.21}
+{"name":"monkey - bald","price":22.21,"status":"disabled", "description":"This primate has gotten old and lacks hair, he is quite an odd fellow."}
 ```
 
 ## Batch Multi-Methods
@@ -394,7 +399,7 @@ This can get very complex, so the outline this is an outline:
  - Send Parameters via REST, URI.
  - Simple Ad-Hoc Qeruies
  - Supports Advanced Queries with `-d` flag
- - `GET http://localhost/ecomerce/product/_search?q=MONKEY`
+ - `GET http://localhost/ecomerce/product/_search?q=monkey`
  
  
  ## Query DSL
@@ -411,7 +416,7 @@ This can get very complex, so the outline this is an outline:
  {
    "query": {
      "match": {
-       "name": "MONEY"
+       "name": "monkey - fluffy"
      }
    }
  }
@@ -424,7 +429,7 @@ This can get very complex, so the outline this is an outline:
  This gets a bit complicated.
  
  - Leaf
-   - Look for particular in particular fields, eg: MONKEY in name
+   - Look for particular in particular fields, eg: `monkey` in name
    - Can be used solo in a query without being part of a compound query.
    - Can also be used compound queries to construct advanced queries.
  - Comfound
@@ -463,3 +468,155 @@ This can get very complex, so the outline this is an outline:
  - geoshapoe (pt, ln, cir, poly, etc)
   
    
+# Sample Queries
+
+To search via query use `_search` and `?q=`
+
+Example:
+```
+GET /ecommerce/product/search?q=<search_string>
+```
+
+Match All
+```
+GET /ecommerce/product/search?q=*
+```
+
+**Hits Key:**
+
+- `total` (# of matches results)
+- `max_score` (Highest score of matched documents)
+- `hits` (each resulting Document)
+  -  `_score` (How well the search matched the query)
+  -  `_source` (The JSON Data we added)
+  
+  
+## Global Searching
+
+Match Word in Any Field
+```
+GET /ecommerce/product/_search?q=monkey
+```
+
+Match Word in Specific Field
+```
+GET /ecommerce/product/_search?q=name:monkey
+```
+
+## Boolean Query
+
+Looks for name field with name that has `money` **AND** `fluffy`.
+```
+GET /ecommerce/product/_search?q=name:(monkey AND fluffy)
+
+# I get 1 result (If you followed from the top)
+```
+
+Looks for name field with name that has `money` **OR** `fluffy`.
+```
+GET /ecommerce/product/_search?q=name:(monkey OR fluffy)
+
+# I get 2 results (If you followed from the top)
+```
+
+Even more complex
+```
+GET /ecommerce/product/_search?q=name:(monkey OR fluffy) AND status:active
+
+# I get 1 results (If you followed from the top)
+```
+
+#### Prefixing Booleans
+
+You can do the following as a **shorthand boolean method**:
+
+- The `+` means a field value is required
+- The `-` means a field value must not be present
+
+```
+GET /ecommerce/product/_search?q=name:+monkey -fluffy
+```
+
+## Search with Query String
+
+> We can search for specific pharases by using quotes. `"` ... `"`
+
+- Default: All terms are optional as long as one term matches. 
+- Default: Boolean operator is `_all`
+
+Although there is a hyphen `-` in the name, it will disregard it and find it (`Standard Analyzer`).
+```
+GET /ecommerce/product/_search?q=name:"monkey fluffy"
+# Ensure: I get 1 results.
+```
+
+Switching the Order of the Terms will not work:
+```
+GET /ecommerce/product/_search?q=name:"fluffy monkey"
+# Ensure: I get 0 results.
+```
+
+### Using an Anaylzer (Why a Hyphen works)
+Note: *#! Deprecation: text request parameter is deprecated and will be removed in the next major release. Please use the JSON in the request body instead request param
+#! Deprecation: analyzer request parameter is deprecated and will be removed in the next major release. Please use the JSON in the request body instead request param*
+
+```
+GET /_analyze?analyzer=standard&text=fluffy - monkey
+```
+
+## Query DSL
+
+Rather than URI queries, this is sending queries Request Body's in the JSON, basically a payload.
+
+- Special Characters must be escaped with a backslash (`\`). Characeters are: `?` `+` `=` and so on, you should be familiar.
+
+The Simplest example to match all, no *Body is present*.
+```
+GET /ecommerce/product/_search 
+{
+  "query": {
+    "match_all": {}
+  }
+}
+```
+
+A Simple match, just add in the `field_name: value`.
+```
+GET /ecommerce/product/_search 
+{
+  "query": {
+    "match": {
+      "name": "monkey"
+    }
+  }
+}
+```
+
+### Multi_Match
+
+Allows you to run a query against many fields
+```
+GET /ecommerce/product/_search 
+{
+  "query": {
+    "multi_match": {
+      "query": "monkey",
+      "fields": [ "name", "description" ]
+    }
+  }
+}
+```
+
+### Phrase Match
+
+Remember: The order of terms MATTER (switching `monkey bald` to `bald money` fails)
+```
+GET /ecommerce/product/_search 
+{
+  "query": {
+    "match_phrase": {
+      "name": "monkey bald"
+    }
+  }
+}
+```
