@@ -145,5 +145,50 @@ These are similar to SQL row types.
   - Token
   - Attachment
   
+# Meta Fields Usage
+
+Each document has and: `_index`, `_type`, and `_id`.
+
+
+## Category Identities:
+
+  - `_index`
+    - Matches documents based on index
+    - Stored as virtual field
+  - `_type`
+    - Type of Document
+    - Indexed to speed up searching
+  - `_id`
+    - ID of the document
+    - Not indexed, can be directed from `_uid, this is autoassigned unless specified.
+  - `_uid`
+    - _type and _id are combined as {type}#{id} and indexed
     
-  
+  - `_source`
+    - JSON passed to Elasticsearch
+    - Not Indexed, but returned in search results
+    - Can be disabled
+  - `_size`
+    - Indexes the _source in bytes
+    - Must install `bin/plugin install mapper-size` (From the elastic search plugins path)
+
+  - `_all`
+    - Concatted data with space as a delimeter
+    - Can be searched but not retrieved.
+    
+  - `_field_names`
+    - Indexes names of every field in document that are not `null`.
+    - Used my `exists` and `missing` to check fields.
+    
+  - `_routing`
+    - Routes a document to a shard to an index
+    - You can define rules, though it's used for advanced use cases.
+   
+    - `_parent`
+      - This is like having a MySQL Foreign Key in the Schema, this is a bit complicated for what Im whipping up.
+    
+    - `_meta`
+      - Store app specific metadata (Anything)
+      - Each mapping type can have metadata (Elastic does nothing with it beside store/retrieve).
+      
+      
