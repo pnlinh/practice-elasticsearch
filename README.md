@@ -67,32 +67,6 @@ Everything in stored in Apache Lucene, which powers elastic search.
 - Defines how Documents and their fields are stored in indexes.
 - Similar to defining a VARCHAR, TEXT, INT in SQL.
 
-# Creating Indexes
-
-Everything uses an HTTP request despite using the built in devtools.
-
-## Create an Index:
-```
-curl -XPUT http://localhost:9200/myindex
-```
-
-You should have a result of: `{ "acknowledged": true} `
-
-## Display Indexes
-The `?pretty` makes the JSON more readable.
-
-```
-curl -XGET http://localhost:9200/_cat/indices?pretty
-```
-
-## Delete Indexes
-```
-curl -XDELETE https://localhost:9200/myindex
-```
-
-You should have a result of: `{ "acknowledged": true} `
-- Also check the `_cat` API from [Display Indexes](#display-indexes) above.
-
 ## Mapping
 This in my opinion, is a little tricky as there are several ways to do it, and when injecting data you can have plenty of conflicts.
 
@@ -234,9 +208,119 @@ PUT /anyname
 }
 ```
 
+
+
 You can test the above in Kibana DevTools (recommended), and you should received `{"acknowledged": true}`.
-you can also a CLI and compress your mapping data, eg:
+
+# Import Sample Data
+
+Im import sample JSON data use the test file, and import with `X PUT`
 
 ```
-curl -XPUT /sample -d <compressed JSON string>
+curl -XPOST http://localhost:9200/ecommerce/product/_bulk --data-binary @test-data.json; 
+```
+
+# Modifying Real Documents
+
+I'll be doing all these methods within the `Kibana` > `Dev Tools` (5.3).
+These can be done with cURL or an API, but for brevity and readiblity I'll keep it short.
+
+This assumes you imported the sample data
+
+> Everything uses an HTTP request, that means HTTP verbs. If you are unfamiliar they are:
+
+| Verbs | Action | |
+| ---   |  ---   | --- |
+| POST  | Create | |
+| GET   | Read   | |
+| PUT   | Update/Replace | |
+| PATCH | Update/Modify | *This will NOT replace as PUT does, only modify* |
+| DELETE | Delete | |
+
+## Index: Create
+```
+curl -XPUT http://localhost:9200/ecommerce
+```
+
+You should have a result of: `{ "acknowledged": true} `
+
+## Index: Display
+
+The `?pretty` makes the JSON more readable.
+
+```
+curl -XGET http://localhost:9200/_cat/indices?pretty
+```
+
+## Index: Delete
+```
+curl -XDELETE https://localhost:9200/myindex
+```
+
+You should have a result of: `{ "acknowledged": true} `
+- Also check the `_cat` API from [Display Indexes](#display-indexes) above.
+
+
+## Document: Replace
+
+> Use `PUT`
+
+```
+PUT ecommerce/product/1001 
+{
+  "name": "Zend 2",
+  "price": 40.00,
+  "qty": 1,
+  "categories": [
+    { "name": "Software" }  
+  ],
+  "tags": [ "zend framework", "php", "zf2", "zf", "programming" ]
+  
+}
+```
+
+## Document: Update
+
+> USE `POST` and `_update`
+
+```
+POST ecommerce/product/1001/_update
+{
+  "doc": {
+    "price" 333.11
+  }
+}
+```
+
+## Document: Delete 
+
+> Use `DELETE`
+> Note: You can only delete documents by ID unless you were to install a "delete by query" plugin.
+
+```
+DELETE /ecommerce/product/1001
+```
+
+
+# Batch Processing
+Batch will do 1 network process rather than one import per call, thus saving tons of HTTP calls.
+
+- Uses `_bulk` API 
+- Created with `\n` Newline character, JSON will not look pretty.
+- The last newline must end with `\n` 
+
+## Batch Insert  
+
+> It's not pretty JSON for bulk
+
+- Insert all the meta data in the first JSON row
+- Insert the data in the second row
+- .. Repeat ..
+
+```
+POST /ecommerce/products/_bulk
+{"index":{"_id":"1002"}}
+{"name":"PIGLET","price":20.21}
+{"index":{"_id":"1003"}}
+{"name":"PIGLET","price":20.21}
 ```
