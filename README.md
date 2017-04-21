@@ -363,3 +363,103 @@ POST _bulk
 GET ecommerce/product/1002
 # Expected: Qty is 10
 ```
+
+## What is the Source Field?
+
+`_source` is the JSON document we added
+
+# Searching
+
+This can get very complex, so the outline this is an outline:
+
+## Revelence and Scoring
+- Methods of Search:
+  - **Query String** (eg: CURL/HTTP)
+  - **Query DSL** (eg: API calls)
+- Query Types
+  - Full Text
+  - Terms
+  - Leaf & Compount
+  - Compount
+  
+ ## Elastic Search Calculates a Score
+ - Ranks Documents per query
+ - Score is calculated for each document matching query
+ - Higher Score = more relevant 
+ - **Query Context**: DO affect Score of Matching Docs
+ - **Filter Context**: Do Not affect scores of Matching Docs.
+ 
+ ## Query String
+ 
+ - Send Parameters via REST, URI.
+ - Simple Ad-Hoc Qeruies
+ - Supports Advanced Queries with `-d` flag
+ - `GET http://localhost/ecomerce/product/_search?q=MONKEY`
+ 
+ 
+ ## Query DSL
+ 
+ - Define queries in JSON Request Body
+ - More features than Strings
+ - More Advanced Queries
+ - Easier to Read
+ 
+ A very simple example
+
+```
+ GET http://localhost:9200/ecommerce/products/_search
+ {
+   "query": {
+     "match": {
+       "name": "MONEY"
+     }
+   }
+ }
+ ```
+ 
+ ## Types of Queries
+ 
+ ### Leaf and Comfound
+ 
+ This gets a bit complicated.
+ 
+ - Leaf
+   - Look for particular in particular fields, eg: MONKEY in name
+   - Can be used solo in a query without being part of a compound query.
+   - Can also be used compound queries to construct advanced queries.
+ - Comfound
+   - Wrap leaf clauses or other compound query clauses
+   - Combine multiple queries in logical funashion (eg: boolean and/or)
+   - Alter Behavior of Queries.
+   
+### Full Text
+  - Run full queries on full text fields
+    - product name/description, etc
+  - Values anaylzed when adding documents/modifying values
+    - removing stop words, tokenizing, lowercasing (?)
+  - Apply each fields analyzer to query string before executing (Now Im lost)
+  
+### Term
+- Exact value match
+- Structure like numbers/date, not full text
+- Not analyzed before running
+
+
+### Joining Queries
+- **Joins in a system is expensive** 
+
+- **Nested query** (Type 1)
+  - Documents may contain fields of type **nexted** with array of objects
+  - Each object can be queried w/nested query as independent Doc.
+- **has_child**/**has_parent** (Type 2):
+  - Parent/Child relationship can exist between two document types w/Single Index.
+  - `has_child` returns parent document whose child Doc matches the query
+  - `has_parent` returns child document whose parent Doc matches the query.
+  
+  
+ ### GeoQueries
+ Yeah, Yeah..
+ - geo_point (lat/lon pair)
+ - geoshapoe (pt, ln, cir, poly, etc)
+  
+   
