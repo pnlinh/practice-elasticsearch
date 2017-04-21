@@ -1,6 +1,6 @@
 # Elasticsearch Notes
 
-This is documentation from a few weeks of study, trial and error. My primary notes are locked in Atlassian Confluence which I won't be taking out (Company Reasons).  Therefore, these are notes based off this fine course at [https://www.udemy.com/elasticsearch-complete-guide](https://www.udemy.com/elasticsearch-complete-guide). 
+This is documentation from a few weeks of study, trial and error. My primary notes are locked in Atlassian Confluence which won't be taking out (Company Reasons).  Therefore, these are notes based off this fine course at [https://www.udemy.com/elasticsearch-complete-guide](https://www.udemy.com/elasticsearch-complete-guide). 
 
 Disclaimer: I have already gone through the following yet couldn't remember it all so suddently:
 - [Elasticsearch Reference 5.x](https://www.elastic.co/guide/en/elasticsearch/reference/5.x/index.html)
