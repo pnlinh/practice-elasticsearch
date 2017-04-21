@@ -192,3 +192,44 @@ Each document has and: `_index`, `_type`, and `_id`.
       - Each mapping type can have metadata (Elastic does nothing with it beside store/retrieve).
       
       
+# Create Mapping
+
+A
+```
+PUT /anyname
+{
+  "mappings": {
+    "products": {
+      "properties": {
+        "title": {
+          "type": "string",
+        },
+        "price": {
+          "type": "double",
+        },
+        "qty": {
+          "type": "integer",
+        },
+        "categories": {
+          "type": "nested",   <--- This isn't neessary, but for many fields in a nested item sure.
+          "properties": {
+            "title": {        <--- Only using one item
+              "type": "string"
+            }
+          }
+        },
+        "tags": {
+          "type": "string"  <--- There is no Array Type.
+        }
+      }
+    }
+  }
+}
+```
+
+You can test the above in Kibana DevTools (recommended), and you should received `{"acknowledged": true}`.
+you can also a CLI and compress your mapping data, eg:
+
+```
+curl -XPUT /sample -d <compressed JSON string>
+```
