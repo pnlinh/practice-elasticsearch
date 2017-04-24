@@ -1,0 +1,18 @@
+/* VARIABLES */
+/* MIXINS - Common mixins for project reuse. */
+/* BOOTSTRAP OVERRIDES */
+/* ELEMENTS */
+/* FORMS */
+/* BUTTONS */
+nav ul {
+  margin: 0;
+  padding: 8px;
+  list-style: none; }
+
+nav li {
+  display: inline-block; }
+
+nav a {
+  display: block;
+  padding: 8px 12px;
+  text-decoration: none; }

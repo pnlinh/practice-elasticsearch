@@ -1,0 +1,27 @@
+@import "_variables";
+
+@import "utils/_mixins";
+@import "utils/_bootstrap_overrides";
+
+@import "common/_elements";
+@import "common/_forms";
+@import "common/_buttons";
+
+$padding: 8px;
+
+nav {
+  ul {
+    margin: 0;
+    padding: $padding;
+    list-style: none;
+  }
+
+  li { display: inline-block; }
+
+  a {
+    display: block;
+    padding: $padding 12px;
+    text-decoration: none;
+  }
+}
+

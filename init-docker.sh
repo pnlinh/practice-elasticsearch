@@ -22,6 +22,7 @@ sudo sysctl -w vm.max_map_count=262144
 
 echo "Initializing Docker Compose"
 
+cd docker
 docker-compose up -d
 
 echo "Loading, waiting 10 seconds to see status"
