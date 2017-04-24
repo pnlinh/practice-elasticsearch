@@ -109,6 +109,12 @@ These are notes based off these [References Docs](#references) and this fine cou
 
 # Installation
 
+First, install the git submodule:
+
+```
+git submodule init && gitsubmodule update
+```
+
 If you are inclined to install the ELK stack and practice or see how it works you need a few things.
 - Linux OS (I am using Ubuntu 16.04)
 - **Docker** 1.12+/CE
