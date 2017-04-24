@@ -1,6 +1,6 @@
 # Elasticsearch Notes
 
-This is documentation from a few weeks of study, trial and error. My primary notes are locked in Atlassian Confluence which won't be taking out (Company Reasons).  Therefore, these are notes based off this fine course at [https://www.udemy.com/elasticsearch-complete-guide](https://www.udemy.com/elasticsearch-complete-guide). 
+This is documentation from a few weeks of study, trial and error. My primary notes are locked in Atlassian Confluence which won't be taking out (Company Reasons).  Therefore, these are notes based off this fine course at [https://www.udemy.com/elasticsearch-complete-guide](https://www.udemy.com/elasticsearch-complete-guide).
 
 Disclaimer: I have already gone through the following yet couldn't remember it swiftly as I liked, having to integrate this in some guys custom framework has made this incredibly difficult. :\
 
@@ -18,7 +18,7 @@ This is a broken down section of terms to hopefully make this easier.
 ## Facts:
 - Elasticsearch is Free
 - The #1 Open Search Search Engine in the world.
-  - Used by AWS Elastic Search, Github Search, 
+  - Used by AWS Elastic Search, Github Search,
 - Elastic Search automatically builds a REST client
 - Elastic Search has API's for nearly every language
 - Often tied into ELK stack
@@ -50,10 +50,10 @@ Everything in stored in Apache Lucene, which powers elastic search.
 
 - **Index**: Products, Users; Similar to an SQL Database Name
   - Lowercased names for: CRUD and Search.
-  - Unlimited Indexes, 
+  - Unlimited Indexes,
 - **Type**: A category of a relevant document beneath an index; Such as SQL Table Name
   - Can have it's own Mapping
-  - example: 
+  - example:
 - **Mapping**: Schema like in MySQL (string, integer, keyword)
 - **Document**: Similar to a databose row
   - JSON chunk of key/value field (string, object, nested object, text, etc).
@@ -61,7 +61,7 @@ Everything in stored in Apache Lucene, which powers elastic search.
 
 ## MetaData
 - Begin with underscores
-  - 
+  -
 
 ## Mapping
 - Defines how Documents and their fields are stored in indexes.
@@ -99,7 +99,7 @@ These are similar to SQL row types.
     - Integers
     - Date
       - Date Formats
-        - YYYY-MM-DD 
+        - YYYY-MM-DD
         - YYYY-MM-DDTHH:MM:SSZ
         - 130000000000 (Epoch)
         - Multiple Dates can use a Boolean
@@ -107,17 +107,17 @@ These are similar to SQL row types.
     - Boolean
        - Valid: false, "false", "off", "no", "0", "", 0.0
     - Binary: Base64 Encoded, Not Searchable
-- **Complex Data Types** 
+- **Complex Data Types**
   - **IMPORTANT** Elastic search flattens everything before storing data so you can lose associations as values are
     not sorted. A nested might object would list as: `name.nested.age`. To perform this you must map a `Nested Datatype`,
-    which makes all the values indexed a single document. 
+    which makes all the values indexed a single document.
     - *These can cause conflicts* by mis-aligning a flattened datatype.
     - Apache Lucene does not know what inner-objects are with JSON and Arrays.
   - JSON Objects
-  - Array 
-  - Geo Datatype (Lat/long pairs within json), eg: 
-    - As String: `{"location": "999,999"}` 
-    - As JSON:   `{"location": {"lat": 999, "long:999"}` 
+  - Array
+  - Geo Datatype (Lat/long pairs within json), eg:
+    - As String: `{"location": "999,999"}`
+    - As JSON:   `{"location": {"lat": 999, "long:999"}`
     - Two other variations that i don't feel are necessary
   - GeoShapes
     - LineString, Polgygon, not very interested.
@@ -125,7 +125,7 @@ These are similar to SQL row types.
   - Completion; "Prefix Suggester", FST (Finate State Transducer) - you probably don't need to use this.
   - Token
   - Attachment
-  
+
 # Meta Fields Usage
 
 Each document has and: `_index`, `_type`, and `_id`.
@@ -144,7 +144,7 @@ Each document has and: `_index`, `_type`, and `_id`.
     - Not indexed, can be directed from `_uid, this is autoassigned unless specified.
   - `_uid`
     - _type and _id are combined as {type}#{id} and indexed
-    
+
   - `_source`
     - JSON passed to Elasticsearch
     - Not Indexed, but returned in search results
@@ -156,23 +156,23 @@ Each document has and: `_index`, `_type`, and `_id`.
   - `_all`
     - Concatted data with space as a delimeter
     - Can be searched but not retrieved.
-    
+
   - `_field_names`
     - Indexes names of every field in document that are not `null`.
     - Used my `exists` and `missing` to check fields.
-    
+
   - `_routing`
     - Routes a document to a shard to an index
     - You can define rules, though it's used for advanced use cases.
-   
+
     - `_parent`
       - This is like having a MySQL Foreign Key in the Schema, this is a bit complicated for what Im whipping up.
-    
+
     - `_meta`
       - Store app specific metadata (Anything)
       - Each mapping type can have metadata (Elastic does nothing with it beside store/retrieve).
-      
-      
+
+
 # Create Mapping
 
 A
@@ -220,7 +220,7 @@ You can test the above in Kibana DevTools (recommended), and you should received
 Im import sample JSON data use the test file, and import with `X PUT`
 
 ```
-curl -XPOST http://localhost:9200/ecommerce/product/_bulk --data-binary @test-data.json; 
+curl -XPOST http://localhost:9200/ecommerce/product/_bulk --data-binary @test-data.json;
 ```
 
 # Modifying Real Documents
@@ -269,16 +269,16 @@ You should have a result of: `{ "acknowledged": true} `
 > Use `PUT`
 
 ```
-PUT ecommerce/product/1001 
+PUT ecommerce/product/1001
 {
   "name": "Zend 2",
   "price": 40.00,
   "quantity": 1,
   "categories": [
-    { "name": "Software" }  
+    { "name": "Software" }
   ],
   "tags": [ "zend framework", "php", "zf2", "zf", "programming" ]
- 
+
 }
 ```
 
@@ -295,7 +295,7 @@ POST ecommerce/product/1001/_update
 }
 ```
 
-## Document: Delete 
+## Document: Delete
 
 > Use `DELETE`
 > Note: You can only delete documents by ID unless you were to install a "delete by query" plugin.
@@ -308,11 +308,11 @@ DELETE /ecommerce/product/1001
 # Batch Processing
 Batch will do 1 network process rather than one import per call, thus saving tons of HTTP calls.
 
-- Uses `_bulk` API 
+- Uses `_bulk` API
 - Created with `\n` Newline character, JSON will not look pretty.
-- The last newline must end with `\n` 
+- The last newline must end with `\n`
 
-## Batch Insert  
+## Batch Insert
 
 **Do this if you decide to test some samples below**
 
@@ -390,31 +390,31 @@ This can get very complex, so the outline this is an outline:
   - **Leaf**
     - Look for a particular value in a particular field, such as the `match`, `term` or `range` queries. These queries can be used by themselves.
    - **Compound**
-      - Wrap other compound or Leaf queries, either to combine their results and scores, to change their behaviour, or to switch from query to filter context. 
+      - Wrap other compound or Leaf queries, either to combine their results and scores, to change their behaviour, or to switch from query to filter context.
       - In laymans terms, It's like doing a few Leaf queries in one, for example you could search a `boolean` that has `must_match` with two `term` nested in it.
-  
+
  ## Elastic Search Calculates a Score
  - Ranks Documents per query
  - Score is calculated for each document matching query
- - Higher Score = more relevant 
+ - Higher Score = more relevant
  - **Query Context**: DO affect Score of Matching Docs
  - **Filter Context**: Do Not affect scores of Matching Docs.
- 
+
  ## Query String
- 
+
  - Send Parameters via REST, URI.
  - Simple Ad-Hoc Qeruies
  - Supports Advanced Queries with `-d` flag
  - `GET http://localhost/ecomerce/product/_search?q=monkey`
- 
- 
+
+
  ## Query DSL
- 
+
  - Define queries in JSON Request Body
  - More features than Strings
  - More Advanced Queries
  - Easier to Read
- 
+
  A very simple example
 
 ```
@@ -427,13 +427,13 @@ This can get very complex, so the outline this is an outline:
    }
  }
  ```
- 
+
  ## Types of Queries
- 
+
  ### Leaf and Comfound
- 
+
  This gets a bit complicated.
- 
+
  - Leaf
    - Look for particular in particular fields, eg: `monkey` in name
    - Can be used solo in a query without being part of a compound query.
@@ -442,14 +442,14 @@ This can get very complex, so the outline this is an outline:
    - Wrap leaf clauses or other compound query clauses
    - Combine multiple queries in logical funashion (eg: boolean and/or)
    - Alter Behavior of Queries.
-   
+
 ### Full Text
   - Run full queries on full text fields
     - product name/description, etc
   - Values anaylzed when adding documents/modifying values
     - removing stop words, tokenizing, lowercasing (?)
   - Apply each fields analyzer to query string before executing (Now Im lost)
-  
+
 ### Term
 - Exact value match
 - Structure like numbers/date, not full text
@@ -457,7 +457,7 @@ This can get very complex, so the outline this is an outline:
 
 
 ### Joining Queries
-- **Joins in a system is expensive** 
+- **Joins in a system is expensive**
 
 - **Nested query** (Type 1)
   - Documents may contain fields of type **nexted** with array of objects
@@ -466,13 +466,13 @@ This can get very complex, so the outline this is an outline:
   - Parent/Child relationship can exist between two document types w/Single Index.
   - `has_child` returns parent document whose child Doc matches the query
   - `has_parent` returns child document whose parent Doc matches the query.
-  
-  
+
+
  ### GeoQueries
  Yeah, Yeah..
  - geo_point (lat/lon pair)
  - geoshapoe (pt, ln, cir, poly, etc)
-  
+
 
 # Sample Queries
 
@@ -495,8 +495,8 @@ GET /ecommerce/product/search?q=*
 - `hits` (each resulting Document)
   -  `_score` (How well the search matched the query)
   -  `_source` (The JSON Data we added)
-  
-  
+
+
 ## Global Searching
 
 Match Word in Any Field
@@ -547,7 +547,7 @@ GET /ecommerce/product/_search?q=name:+monkey -fluffy
 
 > We can search for specific pharases by using quotes. `"` ... `"`
 
-- Default: All terms are optional as long as one term matches. 
+- Default: All terms are optional as long as one term matches.
 - Default: Boolean operator is `_all`
 
 Although there is a hyphen `-` in the name, it will disregard it and find it (`Standard Analyzer`).
@@ -578,7 +578,7 @@ Rather than URI queries, this is sending queries Request Body's in the JSON, bas
 
 The Simplest example to match all, no *Body is present*.
 ```
-GET /ecommerce/product/_search 
+GET /ecommerce/product/_search
 {
   "query": {
     "match_all": {}
@@ -588,7 +588,7 @@ GET /ecommerce/product/_search
 
 A Simple match, just add in the `field_name: value`.
 ```
-GET /ecommerce/product/_search 
+GET /ecommerce/product/_search
 {
   "query": {
     "match": {
@@ -602,7 +602,7 @@ GET /ecommerce/product/_search
 
 Allows you to run a query against many fields
 ```
-GET /ecommerce/product/_search 
+GET /ecommerce/product/_search
 {
   "query": {
     "multi_match": {
@@ -617,7 +617,7 @@ GET /ecommerce/product/_search
 
 Remember: The order of terms MATTER (switching `monkey bald` to `bald money` fails)
 ```
-GET /ecommerce/product/_search 
+GET /ecommerce/product/_search
 {
   "query": {
     "match_phrase": {
@@ -691,7 +691,7 @@ GET /ecommerce/product/_search
 Search for fields that starts with  a prefix, eg `mon` (in my case, short for monkey)
 ```
 GET /ecommerce/product/_search
-{ 
+{
   "query": {
     "prefix" : { "name" : "mon" }
   }
@@ -740,8 +740,8 @@ GET /ecommerce/product/_search
 GET /ecommerce/product/_search
 {
     "query": {
-        "exists" : { 
-          "field" : "user" 
+        "exists" : {
+          "field" : "user"
         }
     }
 }
@@ -846,8 +846,8 @@ GET /ecommerce/product/_search
 **Should will increase the relevent value if it's more relevant** (Behaves like a logical OR).
 
 - `should` will `boost` results below and not exclude them by like `must_not` does.
-Should is optional, but when used documents that match better will rank it higher. For example, 
-- With out three monkey records: `money fluffy`, `monkey bald` and `monkey momma`, the order is:  
+Should is optional, but when used documents that match better will rank it higher. For example,
+- With out three monkey records: `money fluffy`, `monkey bald` and `monkey momma`, the order is:
   - `monkey - bald`
   - `monkey - mama`
   - `monkey - fluffly`
@@ -941,7 +941,7 @@ GET /ecommerce,myfoodblog/product,recipe/_search?q=pasta&size=15
 
 Similar to examples far above we can use the `+` and `-` symbols.
 
-Below, the `+` symbol is interpreted as a `space`, so it's url encoded as `%2B`. 
+Below, the `+` symbol is interpreted as a `space`, so it's url encoded as `%2B`.
 
 @TODO: This fails in 5.3
 ```
@@ -966,7 +966,11 @@ GET /_all/_search?q=monkey
 ```
 
 # Fuzzy Searches
-Fuzziness is the # of characters allowed to be different. Append a tidle with an integer, eg: `~3`, the default is `2`. 
+Fuzziness is the # of characters allowed to be different. Append a tidle with an integer, eg: `~3`, the default is `2`.
+
+- Terms must be in the correct order
+- Allows you to specify distance for CHARACTERS
+- Similar to Proximity search (Yet Proximity deals with WORDS)
 
 **A fuzziness greater than `2` is too expensive for Apache Lucene.**
 
@@ -974,7 +978,7 @@ Fuzziness is the # of characters allowed to be different. Append a tidle with an
 ```
 GET /ecommerce/product/_search?q=past~1
 
-# Except: Results with "pasta" or "paste"
+## Except: Results with "pasta" or "paste"
 ```
 
 **Using Query DSL**
@@ -987,7 +991,7 @@ GET /ecommerce/product/_search
   "query": {
     "match": {
       "name": {
-        "query": "past", 
+        "query": "past",
         "fuzziness": 1
       }
     }
@@ -996,7 +1000,9 @@ GET /ecommerce/product/_search
 ```
 
 
-**Below, Elastic will determine the most appropriate edit distance based on the query.**
+## Auto Fuzziness
+
+Below, Elastic will determine the most appropriate edit distance based on the query.
 
 The Auto Fuzziness:
 - Query Length of `0-2`: exact match
@@ -1009,7 +1015,7 @@ GET /ecommerce/product/_search
   "query": {
     "match": {
       "name": {
-        "query": "past", 
+        "query": "past",
         "fuzziness": "AUTO"
       }
     }
@@ -1027,4 +1033,512 @@ A match query with Lucene is much faster doing a binary lookup for internally st
 - Fuzzy queries compare to terms in an index.
 - **The analyzed terms are searched, not the visible documents.**
 - **This can lead to confusing results.**
+
+
+
+# Proximity Searches
+
+- Terms can be in the different orders, and further apart
+- Must use Quotes `"`
+- A Phrase Search
+- Allows you to specify distance for WORDS
+- Similar to Fuzzy search (Yet Fuzzy deals with CHARACTERS)
+- The `~2, ~3`  etc value is the amount of Edits made to find a word.
+  - If a phrase has terms in the wrong order, such as two terms, it
+    would require `2` editors to move the first time to the front and
+    the second to the back to find a match.
+  - The above can make it tricky to figure out why a phrase might not match.
+
+## Finding in Name
+This value of this `name` is `Pasta - Spaghetti` which contains "Spaghetti - Pasta"
+```
+# Works
+GET /ecommerce/product/_search?q=name:"pasta spaghetti"~2
+
+# Works
+GET /ecommerce/product/_search?q=name:"spaghetti pasta "~2
+
+GET /ecommerce/product/_search?q=name:"spaghetti pasta "~2
+```
+
+## Finding With Word Gaps
+
+An example record has part of the following in it's description `(test-data.json) - Last Record.`:
+```
+"If the moon was made of cheese and steak would you eat it?"
+```
+
+The word `and` is between `cheese` and `steak`, we can find it with `~1`:
+
+```
+GET /ecommerce/product/_search?q=description:"cheese steak"~1
+```
+
+> A high value for proximity such as `~30` can find words with that
+phrase, it will give the phrases that are closer together a higher
+ranking in the search results. (`_score`)
+
+## DSL
+To accomplish the same thing, we do the following, and `slop` is equivalent to `~2`.
+```
+GET /ecommerce/product/_search
+{
+  "query": {
+    "match_phrase": {
+      "name": {
+        "query": "pasta spaghetti",
+        "slop": 2
+      }
+    }
+  }
+}
+```
+
+# Boost
+
+You can boost terms and query clauses and assign them high/low priorities.
+
+- Default Boost Value: `1.0`
+- Use the `^` operator to boost in the REST API.
+
+## Boost a Term
+```
+GET /ecommerce/product/_search?q=name:pasta spaghetti^2.0
+```
+
+## Boost a Phrase
+Note the Quotes `"`, a phrase.
+```
+GET /ecommerce/product/_search?q=name:"pasta spaghetti"^2.0
+```
+
+## DSL
+Boolean Query. The boost value is not linaer, `2.0` is not twice the
+value of `1.0`, but the higher the score the more relevent it will be.
+
+Due to this `boost`, the term `spaghetti` is more important than `noodle`.
+```
+GET /ecommerce/product/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        { "match": { "name": "pasta" } }
+      ],
+      "should": [
+        {
+          "match": {
+            "name": {
+              "query": "spaghetti",
+              "boost": 2.0
+            }
+          }
+        },
+        {
+          "match": {
+            "name": {
+              "query": "noodle",
+              "boost": 1.5
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+# FIlter Results
+
+There are two Contexts:
+- 1: Query Context; Affects the relevence of a query depending on the match.
+- 2: Filter Context; Does not affect relevent scores. Can be used to exclude fields from the results. Since fields can be excluded, relevence doesn't make sense and ES handles this automatically.
+
+## DSL
+```
+GET /ecommerce/product/_search
+{
+  "query": {
+    "bool": {
+      "must": [
+        { "match": { "name": "pasta" }}
+      ],
+      "filter": [
+        {
+          "range": {
+            "quantity": {
+              "gte": 10,
+              "lte": 15
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+# Size of Results Resturned
+- The default value is `10`
+- This uses the `size` parameter.
+
+```
+GET /ecommerce/product/_search?q=name:pasta&size=2
+
+# Expected: hits.total 10 or 11, but only show two results.
+```
+
+## DSL
+```
+GET /ecommerce/product/_search
+{
+  "query": {
+    "match": {
+      "name": "pasta"
+    }
+  },
+  "size": 2
+}
+```
+
+# Pagination
+
+- Default starts from `0` like in programming.
+- Uses `from` and `size`
+
+```
+# Page 1:
+# Since the default is 0, you don't have to specify it for Page 1
+GET /ecommerce/product/_search?q=name:pasta&size=5
+
+# Page 2:
+GET /ecommerce/product/_search?q=name:pasta&size=5&from=5
+
+# Page 3:
+GET /ecommerce/product/_search?q=name:pasta&size=5&from=10
+```
+
+## DSL
+```
+# Page 1:
+# Since the default is 0, you don't have to specify it for Page 1
+GET /ecommerce/product/_search
+{
+  "query": {
+    "match": {
+      "name": "pasta"
+    }
+  },
+  "size": 5
+}
+
+# Page 2
+GET /ecommerce/product/_search
+{
+  "query": {
+    "match": {
+      "name": "pasta"
+    }
+  },
+  "size": 5,
+  "from": 5
+}
+```
+
+# Sorting Results
+
+- Sort Property contains array of objects
+- For multiple sort parameters, results are sorted by the first items in the sort query, then the next.
+
+```
+GET /ecommerce/product/_search
+{
+  "query": {
+    "match": {
+      "name": "pasta"
+    }
+  },
+  "sort": [
+    {
+      "quantity": {
+        "order": "desc"
+      }
+    }
+  ]
+}
+```
+
+# Aggregations
+
+- Grouping/Extracting Statistics
+- eg: MySQL `GROUP BY`, `SUM`.
+
+- **Types**:
+  - **Metric**: Values extracted from Documents
+    - **Single-value** numeric metric agg (sum, avg, min, max)
+    - **Multi-value** numeric metric agg (stats)
+  - **Bucket**: Create sets of documents (buckets are associated w/criteria containing sets of documents)
+    - Allows Sub-Aggregations (Not possible with Metric)
+  - **Pipeline**: Experimental/Advanced
+
+## Sum - Metric:Single
+```
+# All Products
+# The keyname is whatever we call it nested in 'aggs->name\_here(qty_sum)'
+GET /ecommerce/product/_search
+{
+  "query": {
+    "match_all": { }
+  },
+  "size": 0,
+  "aggs": {
+    "qty_sum": {
+      "sum": {
+        "field": "quantity"
+      }
+    }
+  }
+}
+
+# By a Query
+# The keyname is whatever we call it nested in 'aggs->name\_here(sum)'
+GET /ecommerce/product/_search
+{
+  "query": {
+    "match": {
+      "name": {
+        "query": "pasta"
+      }
+    }
+  },
+  "size": 0,
+  "aggs": {
+    "qty_sum": {
+      "sum": {
+        "field": "quantity"
+      }
+    }
+  }
+}
+```
+
+## Average - Metric:Single
+```
+# By a Query
+# The keyname is whatever we call it nested in 'aggs->name\_here(qty_avg)'
+GET /ecommerce/product/_search
+{
+  "query": {
+    "match": {
+      "name": {
+        "query": "pasta"
+      }
+    }
+  },
+  "size": 0,
+  "aggs": {
+    "qty_avg": {
+      "avg": {
+        "field": "quantity"
+      }
+    }
+  }
+}
+```
+
+## Min/Max - Metric:Single
+```
+# Min
+# The keyname is whatever we call it nested in 'aggs->name\_here(qty_min)'
+GET /ecommerce/product/_search
+{
+  "query": {
+    "match": {
+      "name": {
+        "query": "pasta"
+      }
+    }
+  },
+  "size": 0,
+  "aggs": {
+    "qty_min": {
+      "min": {
+        "field": "quantity"
+      }
+    }
+  }
+}
+
+# Max
+# The keyname is whatever we call it nested in 'aggs->name\_here(qty_max)'
+GET /ecommerce/product/_search
+{
+  "query": {
+    "match": {
+      "name": {
+        "query": "pasta"
+      }
+    }
+  },
+  "size": 0,
+  "aggs": {
+    "qty_max": {
+      "max": {
+        "field": "quantity"
+      }
+    }
+  }
+}
+```
+
+## Stats - Metric:Multi
+```
+GET /ecommerce/product/_search
+{
+  "query": {
+    "match": {
+      "name": {
+        "query": "pasta"
+      }
+    }
+  },
+  "size": 0,
+  "aggs": {
+    "qty_stats": {
+      "stats": {
+        "field": "quantity"
+      }
+    }
+  }
+}
+
+## Buckets - Aggregations
+Buckets return groups of documents which meet their criteria.
+They can also run sub-aggregations to apply to all buckets there-in.
+This is an extremely powerful tool.
+
+> Use Case: Find Product Quantity in a price range.
+
+There are no hard-limits on how deep and how many times you can nest `aggs`.
+
+```
+GET /ecommerce/product/_search
+{
+  "query": {
+    "match_all": { }
+  },
+  "size": 0,
+  "aggs": {
+    "qty_ranges": {
+      "range": {
+        "field": "quantity",
+        "ranges": [
+          {
+              "from": 1,
+              "to": 50
+          },
+          {
+            "from": 50,
+            "to": 100
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+**Example output from above**
+```
+  "aggregations": {
+    "qty_ranges": {
+      "buckets": [
+        {
+          "key": "1.0-50.0",
+          "from": 1,
+          "to": 50,
+          "doc_count": 481
+        },
+        {
+          "key": "50.0-100.0",
+          "from": 50,
+          "to": 100,
+          "doc_count": 508
+        }
+      ]
+    }
+  }
+```
+
+## Buckets - Sub-Aggregations
+Will use a Metric Sub-Aggregation with a Bucket.
+```
+GET /ecommerce/product/_search
+{
+  "query": {
+    "match_all": { }
+  },
+  "size": 0,
+  "aggs": {
+    "quantity_ranges": {
+      "range": {
+        "field": "quantity",
+        "ranges": [
+          {
+              "from": 1,
+              "to": 50
+          },
+          {
+            "from": 50,
+            "to": 100
+          }
+        ]
+      },
+      "aggs":     <---- This Sub-Aggregation is run on every bucket
+        "quantity_stats": {
+          "stats": {
+            "field": "quantity"
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+**Example output from above**
+```
+  "aggregations": {
+    "qty_ranges": {
+      "buckets": [
+        {
+          "key": "1.0-50.0",
+          "from": 1,
+          "to": 50,
+          "doc_count": 481,
+          "qty_stats": {  <-- Our nested Agg Produced these
+            "count": 481,
+            "min": 1,
+            "max": 49,
+            "avg": 25.405405405405407,
+            "sum": 12220
+          }
+        },
+        {
+          "key": "50.0-100.0",
+          "from": 50,
+          "to": 100,
+          "doc_count": 508,
+          "qty_stats": {  <-- Our nested Agg Produced these
+            "count": 508,
+            "min": 50,
+            "max": 99,
+            "avg": 74.57874015748031,
+            "sum": 37886
+          }
+        }
+      ]
+    }
+```
+
 
