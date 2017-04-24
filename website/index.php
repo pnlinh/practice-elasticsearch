@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -48,7 +47,7 @@
     <!-- Main jumbotron for a primary marketing message or call to action -->
     <div class="jumbotron">
       <div class="container">
-        <form method="post" action="search.php">
+        <form id="search-form" method="post" action="search.php">
             <input type="text" name="query" class="input-lg">
             <input type="submit" class="btn btn-lg btn-primary">
         </form>
