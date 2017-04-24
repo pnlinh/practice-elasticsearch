@@ -1,21 +1,140 @@
-# Elasticsearch Notes
+# Table of Contents
+<!-- TOC -->
 
-This is documentation from a few weeks of study, trial and error. My primary notes are locked in Atlassian Confluence which won't be taking out (Company Reasons).  Therefore, these are notes based off this fine course at [https://www.udemy.com/elasticsearch-complete-guide](https://www.udemy.com/elasticsearch-complete-guide).
+- [Table of Contents](#table-of-contents)
+- [Introduction](#introduction)
+- [Installation](#installation)
+- [References](#references)
+- [Terms](#terms)
+    - [Facts](#facts)
+    - [Scaling](#scaling)
+    - [Database](#database)
+    - [MetaData](#metadata)
+    - [Mapping](#mapping)
+    - [Mapping](#mapping-1)
+    - [Meta Fields](#meta-fields)
+    - [Field Data Types](#field-data-types)
+- [Meta Fields Usage](#meta-fields-usage)
+    - [Category Identities:](#category-identities)
+- [Create Mapping](#create-mapping)
+- [Import Sample Data](#import-sample-data)
+- [Modifying Real Documents](#modifying-real-documents)
+    - [Index: Create](#index-create)
+    - [Index: Display](#index-display)
+    - [Index: Delete](#index-delete)
+    - [Document: Replace](#document-replace)
+    - [Document: Update](#document-update)
+    - [Document: Delete](#document-delete)
+- [Batch Processing](#batch-processing)
+    - [Batch Insert](#batch-insert)
+    - [MUST Insert this if you follow examples](#must-insert-this-if-you-follow-examples)
+    - [Batch Multi-Methods](#batch-multi-methods)
+    - [Bulk Mutli-Method Alternative](#bulk-mutli-method-alternative)
+    - [What is the Source Field?](#what-is-the-source-field)
+- [Searching](#searching)
+    - [Revelence and Scoring](#revelence-and-scoring)
+    - [Elastic Search Calculates a Score](#elastic-search-calculates-a-score)
+    - [Query String](#query-string)
+    - [Query DSL](#query-dsl)
+    - [Types of Queries](#types-of-queries)
+        - [Leaf and Compound](#leaf-and-compound)
+        - [Full Text](#full-text)
+        - [Term](#term)
+        - [Joining Queries](#joining-queries)
+        - [GeoQueries](#geoqueries)
+- [Sample Queries](#sample-queries)
+    - [Global Searching](#global-searching)
+    - [Boolean Query](#boolean-query)
+            - [Prefixing Booleans](#prefixing-booleans)
+    - [Search with Query String](#search-with-query-string)
+        - [Using an Anaylzer (Why a Hyphen works)](#using-an-anaylzer-why-a-hyphen-works)
+- [! Deprecation: analyzer request parameter is deprecated and will be removed in the next major release. Please use the JSON in the request body instead request param*](#-deprecation-analyzer-request-parameter-is-deprecated-and-will-be-removed-in-the-next-major-release-please-use-the-json-in-the-request-body-instead-request-param)
+    - [Query DSL](#query-dsl-1)
+        - [Multi_Match](#multi_match)
+        - [Phrase Match](#phrase-match)
+    - [Term Queries](#term-queries)
+        - [Single Term](#single-term)
+        - [Multiple Terms](#multiple-terms)
+        - [Range Terms](#range-terms)
+        - [Other Term Level Queries](#other-term-level-queries)
+            - [Prefix](#prefix)
+            - [Regexp/Wildcard](#regexpwildcard)
+            - [Exists](#exists)
+            - [Missing](#missing)
+- [Compound Queries](#compound-queries)
+    - [More Compound Queries](#more-compound-queries)
+- [Search Across Index & Mapping Types](#search-across-index--mapping-types)
+    - [Create a Dynamic Index/Mapping Record](#create-a-dynamic-indexmapping-record)
+    - [Ensure Indices Created](#ensure-indices-created)
+    - [Ensure Mappings Created](#ensure-mappings-created)
+    - [Search Multi-Index](#search-multi-index)
+    - [Search Multi-Mappings](#search-multi-mappings)
+    - [Excluding Items](#excluding-items)
+    - [Search for All Types](#search-for-all-types)
+    - [Search All Indexes, Specified Types](#search-all-indexes-specified-types)
+    - [Search All Indexes, All Types](#search-all-indexes-all-types)
+- [Fuzzy Searches](#fuzzy-searches)
+    - [Auto Fuzziness](#auto-fuzziness)
+    - [Performance Details](#performance-details)
+- [Proximity Searches](#proximity-searches)
+    - [Finding in Name](#finding-in-name)
+    - [Finding With Word Gaps](#finding-with-word-gaps)
+    - [DSL](#dsl)
+- [Boost](#boost)
+    - [Boost a Term](#boost-a-term)
+    - [Boost a Phrase](#boost-a-phrase)
+    - [DSL](#dsl-1)
+- [FIlter Results](#filter-results)
+    - [DSL](#dsl-2)
+- [Size of Results Returned](#size-of-results-returned)
+    - [DSL](#dsl-3)
+- [Pagination](#pagination)
+    - [DSL](#dsl-4)
+- [Sorting Results](#sorting-results)
+- [Aggregations](#aggregations)
+    - [Sum - Metric:Single](#sum---metricsingle)
+    - [Average - Metric:Single](#average---metricsingle)
+    - [Min/Max - Metric:Single](#minmax---metricsingle)
+    - [Stats - Metric:Multi](#stats---metricmulti)
+    - [Buckets - Aggregations](#buckets---aggregations)
+    - [Buckets - Sub-Aggregations](#buckets---sub-aggregations)
 
-Disclaimer: I have already gone through the following yet couldn't remember it swiftly as I liked, having to integrate this in some guys custom framework has made this incredibly difficult. :\
+<!-- /TOC -->
+
+# Introduction
+
+This is my documentation from a few weeks of study, with plenty of trial and error. My primary notes are locked away in Atlassian Confluence I which won't be taking out for Company Reasons.
+
+These are notes based off these [References Docs](#references) and this fine course I took to supplement it: [https://www.udemy.com/elasticsearch-complete-guide](https://www.udemy.com/elasticsearch-complete-guide).
+
+# Installation
+
+If you are inclined to install the ELK stack and practice or see how it works you need a few things.
+- Linux OS (I am using Ubuntu 16.04)
+- **Docker** 1.12+/CE
+- **Docker Compose**
+- **PHP** to run the Example Application
+  - I went with the PHP API since it's a common language, it was part of the course, and I have to build it in PHP anyways. I would have tried something else for fun. Perhaps, Ruby as I never use that!
+
+To instatiate, run the `./init-docker.sh`. This will set your Virtual Machine memory properly before instantiating ElasticSearch. _More notes are contained in the `./init.docker.sh` file.
+
+
+
+# References
+
+> **Disclaimer**: I have already gone through the following documentation and couldn't remember it as well as I wanted. Integration into someones custom framework has made this incredibly difficult with 4000 lines of MySQL search to replace with Elastic. :\
 
 - [Elasticsearch Reference 5.x](https://www.elastic.co/guide/en/elasticsearch/reference/5.x/index.html)
 - [Elasticsearch Clients](https://www.elastic.co/guide/en/elasticsearch/client/index.html)
 - [Plugins and Integrations](https://www.elastic.co/guide/en/elasticsearch/plugins/current/index.html) (Only parts of)
-- Another that I cannot find. The point is, there is so much to read it's easy to miss a small portion that I needed some extra assistance. This is a very large and powerful system. Many notes are reptitive of what I've written down, yet It will help me memorize it to write it down again.
 
-[TOC]
 
 # Terms
 
 This is a broken down section of terms to hopefully make this easier.
 
-## Facts:
+## Facts
+
 - Elasticsearch is Free
 - The #1 Open Search Search Engine in the world.
   - Used by AWS Elastic Search, Github Search,
@@ -34,6 +153,7 @@ This is a broken down section of terms to hopefully make this easier.
 - **Sense** is now within **Dev Tools > Console** within Kibana for testing queries (Elastic 5.x and above)
 
 ## Scaling
+
 - **Cluster**: Collection of Nodes (servers)
   - Cluster should have a Name
 - **Nodes(n1)**: Conain as many servers as you want
@@ -46,7 +166,8 @@ This is a broken down section of terms to hopefully make this easier.
   - Default: Elastisearch adds 5 primary shards and 1 replica per index (Unless configured mannually).
 
 ## Database
-Everything in stored in Apache Lucene, which powers elastic search.
+
+Everything is stored in Apache Lucene, which powers Eastic Search. Lucene also powers Apache Solr which is the second most popular search engine.
 
 - **Index**: Products, Users; Similar to an SQL Database Name
   - Lowercased names for: CRUD and Search.
@@ -61,10 +182,14 @@ Everything in stored in Apache Lucene, which powers elastic search.
 
 ## MetaData
 - Begin with underscores
-  -
+- Always lowercase
+- Examples:
+  - `_id`
+  - `_source`
 
 ## Mapping
-- Defines how Documents and their fields are stored in indexes.
+- **This is similar to a Database Schema.**
+- Defines how Documents (`JSON Data`) and their fields are stored in indexes.
 - Similar to defining a VARCHAR, TEXT, INT in SQL.
 
 ## Mapping
@@ -349,13 +474,13 @@ POST /ecommerce/product/_bulk
 
 ```
 GET /ecommerce/product/1
-# Expected: Founds should be false
 ```
+> Expect: Founds should be false
 
 ```
 GET /ecommerce/product/1003
-# Expected: Qty is 22
 ```
+> Expect: Qty is 22
 
 ## Bulk Mutli-Method Alternative
 
@@ -369,7 +494,7 @@ POST _bulk
 
 ```
 GET ecommerce/product/1002
-# Expected: Qty is 10
+# Expect: Qty is 10
 ```
 
 ## What is the Source Field?
@@ -381,6 +506,7 @@ GET ecommerce/product/1002
 This can get very complex, so the outline this is an outline:
 
 ## Revelence and Scoring
+
 - Methods of Search:
   - **Query String** (eg: CURL/HTTP)
   - **Query DSL** (eg: API calls)
@@ -389,76 +515,84 @@ This can get very complex, so the outline this is an outline:
   - Terms
   - **Leaf**
     - Look for a particular value in a particular field, such as the `match`, `term` or `range` queries. These queries can be used by themselves.
-   - **Compound**
+  - **Compound**
       - Wrap other compound or Leaf queries, either to combine their results and scores, to change their behaviour, or to switch from query to filter context.
       - In laymans terms, It's like doing a few Leaf queries in one, for example you could search a `boolean` that has `must_match` with two `term` nested in it.
 
- ## Elastic Search Calculates a Score
- - Ranks Documents per query
- - Score is calculated for each document matching query
- - Higher Score = more relevant
- - **Query Context**: DO affect Score of Matching Docs
- - **Filter Context**: Do Not affect scores of Matching Docs.
 
- ## Query String
+## Elastic Search Calculates a Score
 
- - Send Parameters via REST, URI.
- - Simple Ad-Hoc Qeruies
- - Supports Advanced Queries with `-d` flag
- - `GET http://localhost/ecomerce/product/_search?q=monkey`
+- Ranks Documents per query
+- Score is calculated for each document matching query
+- Higher Score = more relevant
+- **Query Context**: DO affect Score of Matching Docs
+- **Filter Context**: Do Not affect scores of Matching Docs.
+
+## Query String
+
+- Send Parameters via REST, URI.
+- Simple Ad-Hoc Qeruies
+- Supports Advanced Queries with `-d` flag
+- `GET http://localhost/ecomerce/product/_search?q=monkey`
 
 
- ## Query DSL
+## Query DSL
 
- - Define queries in JSON Request Body
- - More features than Strings
- - More Advanced Queries
- - Easier to Read
+- Define queries in JSON Request Body
+- More features than Strings
+- More Advanced Queries
+- Easier to Read
 
- A very simple example
+A very simple example
 
 ```
- GET http://localhost:9200/ecommerce/products/_search
- {
-   "query": {
-     "match": {
-       "name": "monkey - fluffy"
-     }
-   }
- }
- ```
+GET http://localhost:9200/ecommerce/products/_search
+{
+  "query": {
+    "match": {
+      "name": "monkey - fluffy"
+    }
+  }
+}
+```
 
- ## Types of Queries
+## Types of Queries
 
- ### Leaf and Comfound
+This can get complicated to understand among all the other parts
+of the systems. There are two types of queries: `Leaf` and `Compound`.
 
- This gets a bit complicated.
+### Leaf and Compound
 
- - Leaf
-   - Look for particular in particular fields, eg: `monkey` in name
-   - Can be used solo in a query without being part of a compound query.
-   - Can also be used compound queries to construct advanced queries.
- - Comfound
-   - Wrap leaf clauses or other compound query clauses
-   - Combine multiple queries in logical funashion (eg: boolean and/or)
-   - Alter Behavior of Queries.
+This gets a bit complicated.
+
+- Leaf
+  - Look for particular in particular fields, eg: `monkey` in name
+  - Can be used solo in a query without being part of a compound query.
+  - Can also be used compound queries to construct advanced queries.
+- Compound
+  - Wrap leaf clauses or other compound query clauses
+  - Combine multiple queries in logical funashion (eg: boolean and/or)
+  - Alter Behavior of Queries.
 
 ### Full Text
-  - Run full queries on full text fields
-    - product name/description, etc
-  - Values anaylzed when adding documents/modifying values
-    - removing stop words, tokenizing, lowercasing (?)
-  - Apply each fields analyzer to query string before executing (Now Im lost)
+
+- Runs full queries on full text fields
+  - product name/description, etc
+- Values anaylzed when adding documents/modifying values
+  - removing stop words, tokenizing, lowercasing (?)
+- Apply each fields analyzer to query string before executing (Now Im lost)
+
 
 ### Term
+
 - Exact value match
 - Structure like numbers/date, not full text
 - Not analyzed before running
 
 
 ### Joining Queries
-- **Joins in a system is expensive**
 
+- **Joins in a system is expensive**
 - **Nested query** (Type 1)
   - Documents may contain fields of type **nexted** with array of objects
   - Each object can be queried w/nested query as independent Doc.
@@ -468,10 +602,12 @@ This can get very complex, so the outline this is an outline:
   - `has_parent` returns child document whose parent Doc matches the query.
 
 
- ### GeoQueries
- Yeah, Yeah..
- - geo_point (lat/lon pair)
- - geoshapoe (pt, ln, cir, poly, etc)
+### GeoQueries
+
+Yeah, Yeah..
+
+- geo_point (lat/lon pair)
+- geoshapoe (pt, ln, cir, poly, etc)
 
 
 # Sample Queries
@@ -493,8 +629,8 @@ GET /ecommerce/product/search?q=*
 - `total` (# of matches results)
 - `max_score` (Highest score of matched documents)
 - `hits` (each resulting Document)
-  -  `_score` (How well the search matched the query)
-  -  `_source` (The JSON Data we added)
+  - `_score` (How well the search matched the query)
+  - `_source` (The JSON Data we added)
 
 
 ## Global Searching
@@ -511,26 +647,23 @@ GET /ecommerce/product/_search?q=name:monkey
 
 ## Boolean Query
 
-Looks for name field with name that has `money` **AND** `fluffy`.
+**Looks for name field with name that has `money` **AND** `fluffy`.**
 ```
 GET /ecommerce/product/_search?q=name:(monkey AND fluffy)
-
-# I get 1 result (If you followed from the top)
 ```
+> I get 1 result (If you followed from the top)
 
-Looks for name field with name that has `money` **OR** `fluffy`.
+**Looks for name field with name that has `money` **OR** `fluffy`.**
 ```
 GET /ecommerce/product/_search?q=name:(monkey OR fluffy)
-
-# I get 2 results (If you followed from the top)
 ```
+> I get 2 results (If you followed from the top)
 
-Even more complex
+**Even more complex**
 ```
 GET /ecommerce/product/_search?q=name:(monkey OR fluffy) AND status:active
-
-# I get 1 results (If you followed from the top)
 ```
+> I get 1 results (If you followed from the top)
 
 #### Prefixing Booleans
 
@@ -553,14 +686,16 @@ GET /ecommerce/product/_search?q=name:+monkey -fluffy
 Although there is a hyphen `-` in the name, it will disregard it and find it (`Standard Analyzer`).
 ```
 GET /ecommerce/product/_search?q=name:"monkey fluffy"
-# Ensure: I get 1 results.
 ```
+> Ensure: I get 1 results.
 
-Switching the Order of the Terms will not work:
+
+**Switching the Order of the Terms will not work:**
 ```
 GET /ecommerce/product/_search?q=name:"fluffy monkey"
-# Ensure: I get 0 results.
 ```
+> Ensure: I get 0 results.
+
 
 ### Using an Anaylzer (Why a Hyphen works)
 Note: *#! Deprecation: text request parameter is deprecated and will be removed in the next major release. Please use the JSON in the request body instead request param
@@ -569,6 +704,7 @@ Note: *#! Deprecation: text request parameter is deprecated and will be removed 
 ```
 GET /_analyze?analyzer=standard&text=fluffy - monkey
 ```
+
 
 ## Query DSL
 
@@ -598,9 +734,11 @@ GET /ecommerce/product/_search
 }
 ```
 
+
 ### Multi_Match
 
 Allows you to run a query against many fields
+
 ```
 GET /ecommerce/product/_search
 {
@@ -616,6 +754,7 @@ GET /ecommerce/product/_search
 ### Phrase Match
 
 Remember: The order of terms MATTER (switching `monkey bald` to `bald money` fails)
+
 ```
 GET /ecommerce/product/_search
 {
@@ -626,6 +765,7 @@ GET /ecommerce/product/_search
   }
 }
 ```
+
 
 ## Term Queries
 
@@ -714,8 +854,8 @@ GET /ecommerce/product/_search
     }
 }
 
-# Expected: Received 2 results
 ```
+> Expect: Received 2 results
 
 
 **The `*` matches any character more than once. **
@@ -731,8 +871,8 @@ GET /ecommerce/product/_search
     }
 }
 
-# Expected: Received 2 results
 ```
+> Expect: Received 2 results
 
 #### Exists
 
@@ -746,8 +886,8 @@ GET /ecommerce/product/_search
     }
 }
 
-# Expected: 0 Results
 ```
+> Expect: 0 Results
 
 #### Missing
 Depracated for `expected` in 5.3, example using Exists in this fashion:
@@ -803,8 +943,8 @@ GET /ecommerce/product/_search
   }
 }
 
-# Expect: 1 Result
 ```
+> Expect: 1 Result
 
 **Conditions in the `must_not` clause must all be `false`.**
 
@@ -820,9 +960,8 @@ GET /ecommerce/product/_search
     }
   }
 }
-
-# Expect: 5 Results
 ```
+> Expect: 5 Results
 
 **This must have a monkey, but must not have bald in the `name` field**.
 ```
@@ -839,9 +978,8 @@ GET /ecommerce/product/_search
     }
   }
 }
-
-# Expect: 1 Results
 ```
+> Expect: 1 Results
 
 **Should will increase the relevent value if it's more relevant** (Behaves like a logical OR).
 
@@ -851,6 +989,7 @@ Should is optional, but when used documents that match better will rank it highe
   - `monkey - bald`
   - `monkey - mama`
   - `monkey - fluffly`
+
 ```
 GET /ecommerce/product/_search
 {
@@ -865,9 +1004,8 @@ GET /ecommerce/product/_search
     }
   }
 }
-
-# Expect: 1 Results
 ```
+> Expect: 1 Results
 
 ## More Compound Queries
 
@@ -907,35 +1045,33 @@ PUT /myfoodblog/recipe/1
 }
 ```
 
-## Ensure the Indices were created
+## Ensure Indices Created
 ```
 GET /_cat/indices?v
-
-# Expected: myfoodblog with docs.count of 1
 ```
+> Expect: myfoodblog with docs.count of `1`
 
-## Ensure the Mappings were created
+## Ensure Mappings Created
 ```
 GET /myfoodblog
-
-# Expected: A list of mappings (Probably Strings and Keywords for 5.3)
 ```
+> Expect: A list of mappings (Probably Strings and Keywords for 5.3)
 
 ## Search Multi-Index
+
 Notice the Indice `ecommerce,myfoodblog`
 ```
 GET /ecommerce,myfoodblog/product/_search?q=pasta
-
-# Expected: 10 Hits, only from ecommerce though.
 ```
+> Expect: 10 Hits, only from ecommerce though.
 
 ## Search Multi-Mappings
+
 The Default return size is 10, so set `size=15`. Notices the `product,recipe`.
 ```
 GET /ecommerce,myfoodblog/product,recipe/_search?q=pasta&size=15
-
-# Expected: 11 Hits, ecommerce and myfoodblog (myfoodblog at the bottom)
 ```
+> Expect: 11 Hits, ecommerce and myfoodblog (myfoodblog at the bottom)
 
 ## Excluding Items
 
@@ -943,7 +1079,8 @@ Similar to examples far above we can use the `+` and `-` symbols.
 
 Below, the `+` symbol is interpreted as a `space`, so it's url encoded as `%2B`.
 
-@TODO: This fails in 5.3
+> @TODO: This fails in 5.3
+
 ```
 GET /-ecommerce,%2Bmyfoodblog/product,recipe/_search?q=paste
 ```
@@ -978,8 +1115,8 @@ Fuzziness is the # of characters allowed to be different. Append a tidle with an
 ```
 GET /ecommerce/product/_search?q=past~1
 
-## Except: Results with "pasta" or "paste"
 ```
+> Expect: Results with "pasta" or "paste"
 
 **Using Query DSL**
 
@@ -1035,7 +1172,6 @@ A match query with Lucene is much faster doing a binary lookup for internally st
 - **This can lead to confusing results.**
 
 
-
 # Proximity Searches
 
 - Terms can be in the different orders, and further apart
@@ -1051,13 +1187,11 @@ A match query with Lucene is much faster doing a binary lookup for internally st
 
 ## Finding in Name
 This value of this `name` is `Pasta - Spaghetti` which contains "Spaghetti - Pasta"
-```
-# Works
+```sh
+; Works
 GET /ecommerce/product/_search?q=name:"pasta spaghetti"~2
 
-# Works
-GET /ecommerce/product/_search?q=name:"spaghetti pasta "~2
-
+; Works
 GET /ecommerce/product/_search?q=name:"spaghetti pasta "~2
 ```
 
@@ -1151,8 +1285,8 @@ GET /ecommerce/product/_search
 # FIlter Results
 
 There are two Contexts:
-- 1: Query Context; Affects the relevence of a query depending on the match.
-- 2: Filter Context; Does not affect relevent scores. Can be used to exclude fields from the results. Since fields can be excluded, relevence doesn't make sense and ES handles this automatically.
+- **1: Query Context;** Affects the relevence of a query depending on the match.
+- **2: Filter Context;** Does not affect relevent scores. Can be used to exclude fields from the results. Since fields can be excluded, relevence doesn't make sense and ES handles this automatically.
 
 ## DSL
 ```
@@ -1178,15 +1312,14 @@ GET /ecommerce/product/_search
 }
 ```
 
-# Size of Results Resturned
+# Size of Results Returned
 - The default value is `10`
 - This uses the `size` parameter.
 
 ```
 GET /ecommerce/product/_search?q=name:pasta&size=2
-
-# Expected: hits.total 10 or 11, but only show two results.
 ```
+> Expect: hits.total 10 or 11, but only show two results.
 
 ## DSL
 ```
@@ -1207,21 +1340,19 @@ GET /ecommerce/product/_search
 - Uses `from` and `size`
 
 ```
-# Page 1:
-# Since the default is 0, you don't have to specify it for Page 1
+ Page 1: Since the default is 0, you don't have to specify it for
 GET /ecommerce/product/_search?q=name:pasta&size=5
 
-# Page 2:
+; Page 2:
 GET /ecommerce/product/_search?q=name:pasta&size=5&from=5
 
-# Page 3:
+; Page 3:
 GET /ecommerce/product/_search?q=name:pasta&size=5&from=10
 ```
 
 ## DSL
 ```
-# Page 1:
-# Since the default is 0, you don't have to specify it for Page 1
+; Page 1: Since the default is 0, you don't have to specify it for Page 1
 GET /ecommerce/product/_search
 {
   "query": {
@@ -1232,7 +1363,7 @@ GET /ecommerce/product/_search
   "size": 5
 }
 
-# Page 2
+; Page 2
 GET /ecommerce/product/_search
 {
   "query": {
@@ -1283,8 +1414,8 @@ GET /ecommerce/product/_search
 
 ## Sum - Metric:Single
 ```
-# All Products
-# The keyname is whatever we call it nested in 'aggs->name\_here(qty_sum)'
+; All Products -- The keyname is whatever we call it nested in 'aggs->name\_here(qty_sum)'
+
 GET /ecommerce/product/_search
 {
   "query": {
@@ -1300,8 +1431,9 @@ GET /ecommerce/product/_search
   }
 }
 
-# By a Query
-# The keyname is whatever we call it nested in 'aggs->name\_here(sum)'
+
+; By a Query -- The keyname is whatever we call it nested in 'aggs->name\_here(sum)'
+
 GET /ecommerce/product/_search
 {
   "query": {
@@ -1324,8 +1456,8 @@ GET /ecommerce/product/_search
 
 ## Average - Metric:Single
 ```
-# By a Query
-# The keyname is whatever we call it nested in 'aggs->name\_here(qty_avg)'
+; By a Query -- The keyname is whatever we call it nested in 'aggs->name\_here(qty_avg)'
+
 GET /ecommerce/product/_search
 {
   "query": {
@@ -1348,8 +1480,8 @@ GET /ecommerce/product/_search
 
 ## Min/Max - Metric:Single
 ```
-# Min
-# The keyname is whatever we call it nested in 'aggs->name\_here(qty_min)'
+; Min -- The keyname is whatever we call it nested in 'aggs->name\_here(qty_min)'
+
 GET /ecommerce/product/_search
 {
   "query": {
@@ -1369,8 +1501,9 @@ GET /ecommerce/product/_search
   }
 }
 
-# Max
-# The keyname is whatever we call it nested in 'aggs->name\_here(qty_max)'
+
+; Max -- The keyname is whatever we call it nested in 'aggs->name\_here(qty_max)'
+
 GET /ecommerce/product/_search
 {
   "query": {
@@ -1411,6 +1544,7 @@ GET /ecommerce/product/_search
     }
   }
 }
+```
 
 ## Buckets - Aggregations
 Buckets return groups of documents which meet their criteria.
