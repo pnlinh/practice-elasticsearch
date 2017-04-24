@@ -48,7 +48,6 @@
             - [Prefixing Booleans](#prefixing-booleans)
     - [Search with Query String](#search-with-query-string)
         - [Using an Anaylzer (Why a Hyphen works)](#using-an-anaylzer-why-a-hyphen-works)
-- [! Deprecation: analyzer request parameter is deprecated and will be removed in the next major release. Please use the JSON in the request body instead request param*](#-deprecation-analyzer-request-parameter-is-deprecated-and-will-be-removed-in-the-next-major-release-please-use-the-json-in-the-request-body-instead-request-param)
     - [Query DSL](#query-dsl-1)
         - [Multi_Match](#multi_match)
         - [Phrase Match](#phrase-match)
@@ -704,8 +703,7 @@ GET /ecommerce/product/_search?q=name:"fluffy monkey"
 
 
 ### Using an Anaylzer (Why a Hyphen works)
-Note: *#! Deprecation: text request parameter is deprecated and will be removed in the next major release. Please use the JSON in the request body instead request param
-#! Deprecation: analyzer request parameter is deprecated and will be removed in the next major release. Please use the JSON in the request body instead request param*
+Note: *#! Deprecation: text request parameter is deprecated and will be removed in the next major release. Please use the JSON in the request body instead request param*
 
 ```
 GET /_analyze?analyzer=standard&text=fluffy - monkey
