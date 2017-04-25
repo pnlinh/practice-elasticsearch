@@ -4,6 +4,13 @@
 - [Table of Contents](#table-of-contents)
 - [Introduction](#introduction)
 - [Installation](#installation)
+    - [Initialize Git Submodule:](#initialize-git-submodule)
+    - [Initialize Composer Dependenices](#initialize-composer-dependenices)
+    - [Launch Docker Containers](#launch-docker-containers)
+        - [Automatic](#automatic)
+        - [Manual](#manual)
+        - [Inject Data](#inject-data)
+    - [Load the Project](#load-the-project)
 - [References](#references)
 - [Terms](#terms)
     - [Facts](#facts)
@@ -108,21 +115,65 @@ These are notes based off these [References Docs](#references) and this fine cou
 
 # Installation
 
-First, install the git submodule:
+The Installation is very easy, you will need a few things locally:
+- Git *(Obviously)*
+- PHP Installed, I'm using 7.0 here.
+- Docker/Docker Compose to run the ELK stack
+- Preferably a Linux OS to easily use the CLI and adjust a few settings.
+
+## Initialize Git Submodule:
+Besides cloning this repository first, you next need to add the submodule which is ELK stack with Elastic 5.3. It is
+a simple fork I leave on my GitHub that is very useful - This way you don't have to install and customize it.
 
 ```
 git submodule init && gitsubmodule update
 ```
 
-If you are inclined to install the ELK stack and practice or see how it works you need a few things.
-- Linux OS (I am using Ubuntu 16.04)
-- **Docker** 1.12+/CE
-- **Docker Compose**
-- **PHP** to run the Example Application
-  - I went with the PHP API since it's a common language, it was part of the course, and I have to build it in PHP anyways. I would have tried something else for fun. Perhaps, Ruby as I never use that!
+## Initialize Composer Dependenices
 
-To instatiate, run the `./init-docker.sh`. This will set your Virtual Machine memory properly before instantiating ElasticSearch. _More notes are contained in the `./init.docker.sh` file.
+This includes the ElasticSearch PHP API, it is required.
+```
+composer install
+```
 
+## Launch Docker Containers
+
+I have included an `./init-docker.sh` file which will load everything for you and set the OS `vm.max_map_count` to
+what ElasticSearch recommends at `262144`. Otherwise, you can run two commands manually, here are both ways to do it..
+
+### Automatic
+Note: This runs the containers as a daemon.
+
+```
+sudo ./init-docker
+```
+
+### Manual
+You can run this in the foreground by omitting the `-d` in the docker-compose command if you prefer.
+
+```
+sudo sysctl -w vm.max_map_count=262144
+
+cd docker
+docker-compose up -d
+```
+
+### Inject Data
+
+Now use cURL to Dynamically Index `1000` documents that we can paly with.
+
+```
+curl -XPOST http://localhost:9200/ecommerce/product/_bulk --data-binary @test-data.json;
+```
+
+> Expected: From the cURL command you should see a very large JSON output.
+
+## Load the Project
+
+Since this is using PHP, you can run it with two options here:
+
+1. By placing this in a PHP available host and accessing `localhost/this-repo-name/website`
+2. Using the development server with: `php -S localhost:8080`
 
 
 # References

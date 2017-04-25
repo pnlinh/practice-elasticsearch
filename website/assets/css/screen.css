@@ -1,18 +1,27 @@
-/* VARIABLES */
-/* MIXINS - Common mixins for project reuse. */
-/* BOOTSTRAP OVERRIDES */
-/* ELEMENTS */
-/* FORMS */
-/* BUTTONS */
-nav ul {
-  margin: 0;
-  padding: 8px;
-  list-style: none; }
+body {
+  /** This fixes navbar position */
+  margin-top: 50px;
+}
 
-nav li {
-  display: inline-block; }
+#menu, #search-results {
+  min-height: 400px;
+}
 
-nav a {
-  display: block;
-  padding: 8px 12px;
-  text-decoration: none; }
+.jumbotron h3 {
+  margin-top: 0px;
+  line-height: 2;
+}
+
+h2 {
+  border-bottom: 1px dotted #f4f4f4;
+  margin-bottom: 20px;
+}
+
+.focus {
+  font-weight: bolder;
+  background-color: #444;
+  color: #fff;
+  padding: 2px 4px;
+  border-radius: 3px;
+  cursor: pointer;
+}
