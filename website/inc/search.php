@@ -26,8 +26,11 @@
  */
 require 'vendor/autoload.php';
 
+// Yep, PHP 7 Constant array.
+define('ES_HOSTS', ['localhost:9200']);
+
 // Get ElasticSearch Instance
-$client = getElasticClient(['localhost:9200']);
+$client = getElasticClient(ES_HOSTS);
 
 /**
  * ------------------------------------------------------------------
@@ -126,8 +129,8 @@ if ($query = $request->query('query')) {
         'type' => 'product',
         'body' => [
             'query' => $queryArray,
-            'size' => RESULTS_PER_PAGE,
-            'from' => $from,
+//            'size' => RESULTS_PER_PAGE,
+//            'from' => $from,
         ],
     ];
 
@@ -152,7 +155,7 @@ if ($query = $request->query('query')) {
  */
 function getSearchFilterAggregations(array $queryArray)
 {
-    $client = getElasticClient();
+    $client = getElasticClient(ES_HOSTS);
 
     $params = [
         'index' => 'ecommerce',
