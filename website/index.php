@@ -1,3 +1,10 @@
+<?php
+/**
+ * This makes our search work and supplies the variables.
+ * I did not want to use MVC to keep it super simple.
+ */
+require 'inc/search.php';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -33,17 +40,11 @@
 
 <body>
 
-<?php
-// Prefilled Search Items for Pagination
-// $query = isset($_GET['query']) ? urldecode($_GET['query']) : false;
-// $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
-?>
-
 <nav class="navbar navbar-inverse navbar-fixed-top">
     <div class="container">
     <div class="navbar-header">
         <!-- No Small Navigation needed -->
-        <a class="navbar-brand" href="#"><b>Elastic Search</b> Example</a>
+        <a class="navbar-brand" href="#"><b>Elastic Search</b> PHP &amp; JS Example</a>
     </div>
     </div>
 </nav>
@@ -53,11 +54,11 @@
     <div class="container">
 
         <div class="col-md-4 text-right">
-            <h3>Search</h3>
+            <h3>Search (PHP &amp; JS)</h3>
         </div>
         <div class="col-md-4">
             <!-- The form does not need method="post" because AJAX is handling it -->
-            <form id="search-form" action="search.php">
+            <form id="search-form" method="get" action="index.php">
                 <input type="text" id="search-query-input" name="query" class="input-lg" placeholder="Search..">
                 <button id="search-query-btn" class="btn btn-lg btn-primary"><i class="fa fa-search" aria-hidden="true"></i></button>
             </form>
@@ -81,7 +82,7 @@
         <div id="search-results">
             <!-- Dynamic JS Results from Elasticsearch -->
             <p>
-            You haven't searched for anything yet, please fill out the <span class="focus" data-id="search-query-input">Search Form</a>.
+            You haven't searched for anything yet, please fill out the <span class="focus" data-id="search-query-input">Search Form</span>.
             </p>
         </div>
 
@@ -90,6 +91,121 @@
         </div>
     </div>
     </div>
+
+    <div class="row">
+        <div class="col-xs-6 col-xs-offset-3">
+            <div id="search-wrapper">
+                <form action="/" method="GET" class="form-inline">
+                    <div class="form-group">
+                        <input type="text" name="query" class="form-control" placeholder="Enter your search query" value="<?=$query or '';?>" />
+                        <button type="submit" name="search-button" class="form-control glyphicon glyphicon-search"></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <?php if (!empty($query)): ?>
+        <div class="row" id="filters-wrapper">
+            <div class="col-xs-6 col-xs-offset-3">
+                <strong>Price:</strong>
+
+                <?php foreach ($aggregations['aggregations']['price_ranges']['buckets'] as $bucket):?>
+                    <a href="?query=<?=$query;?>&page=<?=$page;?>&startprice=<?=$bucket['from'];?>&endprice=<?=$bucket['to'];?>&status=<?=$status or '';?>&category=<?=$category or '';?>" class="<?=$bucket['from'] == $startPrice && $bucket['to'] == $endPrice ? 'active' : '';?>">
+                        <?=$bucket['from']?> - <?=$bucket['to'];?> (<?=$bucket['doc_count'];?>)
+                    </a>
+                <?php endforeach;?>
+
+                <br />
+
+                <strong>Status:</strong>
+
+                <?php foreach ($aggregations['aggregations']['statuses']['buckets'] as $bucket):?>
+                    <a href="?query=<?=$query;?>&page=<?=$page;?>&status=<?=urlencode($bucket['key']);?>&startprice=<?=$startPrice or '';?>&endprice=<?=$endPrice or '';?>&category=<?=$category or '';?>" class="<?=$bucket['key'] == $status ? 'active' : '';?>">
+                        <?=ucfirst($bucket['key']);?> (<?=$bucket['doc_count'];?>)
+                    </a>
+                <?php endforeach;?>
+
+                <br />
+
+                <strong>Category:</strong>
+
+                <?php foreach ($aggregations['aggregations']['categories']['categories_count']['buckets'] as $bucket):?>
+                    <a href="?query=<?=$query;?>&page=<?=$page;?>&category=<?=urlencode($bucket['key']);?>&status=<?=$status or '';?>&startprice=<?=$startPrice or '';?>&endprice=<?=$endPrice or '';?>" class="<?=$bucket['key'] == $category ? 'active' : '';?>">
+                        <?=ucfirst($bucket['key']);?> (<?=$bucket['doc_count'];?>)
+                    </a>
+                <?php endforeach;?>
+            </div>
+        </div>
+    <?php endif;?>
+
+    <?php if (!empty($hits)): ?>
+        <div class="row" id="results-text">
+            <div class="col-xs-8 col-xs-offset-2">
+                Displaying results <?=($from + 1);?> to <?=$to;?> of <?=$total;?>.
+            </div>
+        </div>
+
+        <?php foreach ($hits as $hit):?>
+            <div class="row">
+                <div class="col-xs-8 col-xs-offset-2">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <a href="/product/view/<?=$hit['_id'];?>"><?=$hit['_source']['name'];?></a>
+                        </div>
+
+                        <div class="panel-body">
+                            <p><?=$hit['_source']['description'];?></p>
+
+                            <strong>Price:</strong> <?=$hit['_source']['price'];?>
+                            <br />
+                            <strong>Status:</strong> <?=ucfirst($hit['_source']['status']);?>
+                            <br />
+                            <strong>Categories:</strong>
+
+                            <?php foreach ($hit['_source']['categories'] as $c):?>
+                                <?=$c['name'];?> &nbsp;
+                            <?php endforeach;?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <?php endforeach;?>
+
+        <div class="row">
+            <div class="pagination-wrapper col-xs-8 col-xs-offset-2">
+                <nav>
+                    <ul class="pagination">
+                        <li>
+                            <a href="?query=<?=urlencode($query);?>&page=<?=($page - 1);?>" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+
+                        <?php for ($i = 1; $i <= 10; $i++): ?>
+                            <li <?=($i == $page) ? 'class="active"' : '';?>><a href="?query=<?=urlencode($query);?>&page=<?=$i;?>&status=<?=$status or '';?>&startprice=<?=$startPrice or '';?>&endprice=<?=$endPrice or '';?>&category=<?=$category or '';?>"><?=$i;?></a></li>
+                        <?php endfor;?>
+
+                        <li>
+                            <a href="?query=<?=urlencode($query);?>&page=<?=($page + 1);?>" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    <?php elseif (isset($hits)): ?>
+        <div class="row" id="no-results">
+            <div class="col-xs-6 col-xs-offset-3">
+                <p>No results!</p>
+            </div>
+        </div>
+    <?php endif;?>
+@endsection
+
+
+    /////
 
 </div> <!-- /container -->
 
@@ -108,14 +224,10 @@
 ================================================== -->
 <!-- Placed at the end of the document so the pages load faster -->
 <script src="assets/third-party/js/jquery.min.js"></script>
-<script src="assets/third-party/jquery-ui-custom/jquery-ui.min.js"></script>
 <script src="assets/third-party/bootstrap/js/bootstrap.min.js"></script>
 
 <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
 <script src="assets/third-party/js/ie10-viewport-bug-workaround.js"></script>
-
-<!-- Custom JS -->
-<script src="assets/js/app.js"></script>
 
 </body>
 </html>

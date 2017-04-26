@@ -6,6 +6,7 @@
  */
 require 'vendor/autoload.php';
 
+
 $elastic = Elasticsearch\ClientBuilder::create()
 ->setHosts(['localhost:9200'])
     ->setRetries(2)
@@ -37,20 +38,86 @@ if (empty($query)) {
     return $output([], $query, "<b>Oops!</b> No Search Query was Provided, please retry filling in the ");
 }
 
+$variables['aggregations'] = getfilterAgg();
+
+// Dynamically Add Fuzzy Queries for spelling errors
+$query = [
+    'bool' => [
+        'must' => []
+    ],
+];
+
+// Generates Terms dynamically (separated by a space),
+// They are an array of terms to iterate through
+$terms = explode(' ', $query);
+
+foreach ($terms as $token) {
+    $query['bool']['must'][] = [
+        'match' => [
+            'name' => [
+                'query' => $token,
+                'fuzziness' => '3', // Up to 3 letters
+            ]
+        ],
+    ];
+}
+
 $params = [
     'index' => 'ecommerce',
     'type' => 'product',
     'body' => [
-        'query' => [
-            'match' => [
-                'name' => $query
-            ],
-        ],
+        'query' => $query,
         // Pagination
         'size' => $per_page,
         'from' => $from
     ],
 ];
+
+function getfilterAgg() {
+    $params = [
+        'index' => 'ecommerce',
+        'type' => 'product',
+        'body' => [
+            'query' => [
+                'match_all' => new \stdClass()
+            ],
+            'size' => 0,
+            'aggs' => [
+                'status' => [
+                    'terms' => [ 'field' => 'status' ],
+
+                ],
+                'price_range' => [
+                    'range' => [ 'field' => 'price' ],
+                    'ranges' => [
+                        [ 'from' => 1, 'to' => 25 ],
+                        [ 'from' => 25, 'to' => 50 ],
+                        [ 'from' => 50, 'to' => 75 ],
+                        [ 'from' => 75, 'to' => 100 ]
+                    ],
+                ],
+
+                // Categories are Nested special type
+                'categories' => [
+                    'nested' => [
+                        // Path is name of field containing objects
+                        'path' => 'categories',
+                    ],
+                    'aggs' => [
+                        'categories_count' => [
+                            'terms' => [ 'field' => 'categories.name' ]
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    // todo: need to fix
+    return $elastic->search($params);
+}
+
+
 
 /**
  * Attempt to get the search results

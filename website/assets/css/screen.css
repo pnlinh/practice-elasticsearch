@@ -7,6 +7,14 @@ body {
   min-height: 400px;
 }
 
+#js-example {
+  background-color: #5cb85c!important;
+}
+
+#php-example {
+  border-top: 5px solid #0275d8!important;
+}
+
 .jumbotron h3 {
   margin-top: 0px;
   line-height: 2;
