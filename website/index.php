@@ -54,10 +54,10 @@ require 'inc/search.php';
     <div class="container">
 
         <div class="col-md-4 text-right">
-            <h3>Search (PHP &amp; JS)</h3>
+            <h3>Search</h3>
         </div>
         <div class="col-md-4">
-            <!-- The form does not need method="post" because AJAX is handling it -->
+            <!-- Notice we are using GET -->
             <form id="search-form" method="get" action="index.php">
                 <input type="text" id="search-query-input" name="query" class="input-lg" placeholder="Search..">
                 <button id="search-query-btn" class="btn btn-lg btn-primary"><i class="fa fa-search" aria-hidden="true"></i></button>
@@ -68,43 +68,10 @@ require 'inc/search.php';
     </div>
 </div>
 
+<!-- start:Container -->
 <div class="container">
-    <!-- Example row of columns -->
-    <div class="row">
-    <div class="col-md-4">
-        <h2>Menu</h2>
-        <div id="menu">
-            <!-- Dynamic JS Results from Elasticsearch -->
-        </div>
-    </div>
-    <div class="col-md-8">
-        <h2>Search Results</h2>
-        <div id="search-results">
-            <!-- Dynamic JS Results from Elasticsearch -->
-            <p>
-            You haven't searched for anything yet, please fill out the <span class="focus" data-id="search-query-input">Search Form</span>.
-            </p>
-        </div>
 
-        <div id="search-pagination">
-            <!-- Dynamic JS Results from Elasticsearch -->
-        </div>
-    </div>
-    </div>
-
-    <div class="row">
-        <div class="col-xs-6 col-xs-offset-3">
-            <div id="search-wrapper">
-                <form action="/" method="GET" class="form-inline">
-                    <div class="form-group">
-                        <input type="text" name="query" class="form-control" placeholder="Enter your search query" value="<?=$query or '';?>" />
-                        <button type="submit" name="search-button" class="form-control glyphicon glyphicon-search"></button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
+    <!-- start:FilterDisplay -->
     <?php if (!empty($query)): ?>
         <div class="row" id="filters-wrapper">
             <div class="col-xs-6 col-xs-offset-3">
@@ -138,7 +105,9 @@ require 'inc/search.php';
             </div>
         </div>
     <?php endif;?>
+    <!-- end:FilterDisplay -->
 
+    <!-- start:QueryDisplay -->
     <?php if (!empty($hits)): ?>
         <div class="row" id="results-text">
             <div class="col-xs-8 col-xs-offset-2">
@@ -172,6 +141,8 @@ require 'inc/search.php';
             </div>
         <?php endforeach;?>
 
+
+        <!-- start:PaginationDisplay -->
         <div class="row">
             <div class="pagination-wrapper col-xs-8 col-xs-offset-2">
                 <nav>
@@ -195,6 +166,8 @@ require 'inc/search.php';
                 </nav>
             </div>
         </div>
+    <!-- end:PaginationDisplay -->
+
     <?php elseif (isset($hits)): ?>
         <div class="row" id="no-results">
             <div class="col-xs-6 col-xs-offset-3">
@@ -202,12 +175,10 @@ require 'inc/search.php';
             </div>
         </div>
     <?php endif;?>
-@endsection
+    <!-- end:QueryDisplay -->
 
-
-    /////
-
-</div> <!-- /container -->
+</div>
+<!-- end:Container -->
 
 <hr>
 

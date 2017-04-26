@@ -1,29 +1,48 @@
 <?php
-require 'vendor/autoload.php';
+/**
+ * @critics
+ * This is not meant to be beautiful, and it's not how I normally code.
+ * I did not decouple functions or classes on purpose, let's chill. I could add
+ * more composer packages for DI, or a Micro MVC but I have chosen not to so anyone
+ * that looks at this will not have to try very hard!
+ *
+ * This just displays the use of ElasticSearch (ES) as minimally and simply as possible,
+ *   and it's to be framework agnostic so it's any implementation can be done in your
+ *   framework of choice.
+ *
+ * @notes
+ * - I refactored the demonstration Source from Laravel to a Framework-less structure.
+ * - Originatal source was by "Bo Andersen" in his course: "Complete Guide To Elasticsearch"
+ * - I highly recommend this course for ElasticSearch:
+ *   https://www.udemy.com/elasticsearch-complete-guide/learn/v4/overview
+ *
+ * @misc
+ * - Function(s) and/or Class(es) are at The Bottom.
+ */
 
 /**
- * Quick and Sloppy way to get the Client.
- * Need it to use within a function, not writing closures either.
+ * Require Autoloader
+ * @depends elasticsearch/elasticsearch
  */
-function getClient()
-{
-    return Elasticsearch\ClientBuilder::create()
-        ->setHosts(['localhost:9200'])
-        ->setRetries(2)
-        ->build();
-}
+require 'vendor/autoload.php';
 
-$client = getClient();
+// Get ElasticSearch Instance
+$client = getElasticClient(['localhost:9200']);
 
+/**
+ * ------------------------------------------------------------------
+ * Search Logic
+ * ------------------------------------------------------------------
+ */
 define('RESULTS_PER_PAGE', 5);
 
+// Variables are output on the page and used for:
+//  pagination, query display, prices, and other various display items
 $variables = [];
 
-$request = new class() {
-      function query($param) {
-          return isset($_GET[$param]) ? trim($_GET[$param]) : false;
-      }
-};
+
+$request = new Request();
+
 
 
 if ($query = $request->query('query')) {
@@ -54,7 +73,7 @@ if ($query = $request->query('query')) {
         ];
     }
 
-    $variables['aggregations'] = getSearchFilterAggregations($queryArray);
+//    $variables['aggregations'] = getSearchFilterAggregations($queryArray);
 
     /* Filters */
     $startPrice = $request->query('startprice');
@@ -123,12 +142,17 @@ if ($query = $request->query('query')) {
     if (isset($result['hits']['hits'])) {
         $variables['hits'] = $result['hits']['hits'];
     }
+
 }
 
-
+/**
+ * ------------------------------------------------------------------
+ * Functions
+ * ------------------------------------------------------------------
+ */
 function getSearchFilterAggregations(array $queryArray)
 {
-    $client = getClient();
+    $client = getElasticClient();
 
     $params = [
         'index' => 'ecommerce',
@@ -173,3 +197,34 @@ function getSearchFilterAggregations(array $queryArray)
     return $client->search($params);
 }
 
+/**
+ * Quick and Sloppy way to get the Client.
+ * Need it to use within a function, not writing closures either.
+ */
+function getElasticClient(array $hosts=[])
+{
+    return \Elasticsearch\ClientBuilder::create()
+        ->setHosts($hosts)
+        ->setRetries(2)
+        ->build();
+}
+
+/**
+ * ------------------------------------------------------------------
+ * Classes
+ * ------------------------------------------------------------------
+ */
+
+/**
+ * Quick Ad-Hoc way to snag GET values without replacing all the code, lol.
+ */
+class Request
+{
+    /**
+     * @param $param The name of the $_GET value
+     * @return bool|string
+     */
+    public function query($param) {
+      return isset($_GET[$param]) ? trim($_GET[$param]) : false;
+    }
+}
