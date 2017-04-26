@@ -15,10 +15,10 @@ $elastic = Elasticsearch\ClientBuilder::create()
 /**
  * Attempt to get the post query from field.
  *
- * > $_POST comes through assets/app.js
+ * > $_POST comes through assets/old_app.js
  * > With the form on index.html #search-form
  *      The search field name="query"
- *      The action="search.php" is important, assets/app.js reads the path there to post to.
+ *      The action="old_search.php" is important, assets/old_app.js reads the path there to post to.
  *
  */
 $query = isset($_POST['query']) ? trim($_POST['query']) : false;

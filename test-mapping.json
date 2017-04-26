@@ -1,0 +1,37 @@
+{
+  "mappings": {
+    "product": {
+      "properties": {
+        "name": {
+          "type": "text",
+          "fields": {
+            "raw": {
+              "type": "keyword"
+            }
+          }
+        },
+        "price": {
+          "type": "float"
+        },
+        "description": {
+          "type": "text",
+          "fields": {
+            "raw": {
+              "type": "keyword"
+            }
+          }
+        },
+        "status": {
+          "type": "keyword"
+        },
+        "quantity": {
+          "type": "integer"
+        },
+        "categories": {
+          "type": "nested"
+        }
+      }
+    }
+  }
+}
+

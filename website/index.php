@@ -44,7 +44,7 @@ require 'inc/search.php';
     <div class="container">
     <div class="navbar-header">
         <!-- No Small Navigation needed -->
-        <a class="navbar-brand" href="#"><b>Elastic Search</b> PHP &amp; JS Example</a>
+        <a class="navbar-brand" href="#"><b>Elastic Search</b> PHP Example</a>
     </div>
     </div>
 </nav>
@@ -62,7 +62,7 @@ require 'inc/search.php';
                 <input type="text" id="search-query-input" name="query" class="input-lg" placeholder="Search..">
                 <button id="search-query-btn" class="btn btn-lg btn-primary"><i class="fa fa-search" aria-hidden="true"></i></button>
             </form>
-            <small>Try <code>Bread</code> for an example</small>
+            <small>Try <code>bread</code> for an example</small>
         </div>
 
     </div>
@@ -78,8 +78,8 @@ require 'inc/search.php';
                 <strong>Price:</strong>
 
                 <?php foreach ($aggregations['aggregations']['price_ranges']['buckets'] as $bucket):?>
-                    <a href="?query=<?=$query;?>&page=<?=$page;?>&startprice=<?=$bucket['from'];?>&endprice=<?=$bucket['to'];?>&status=<?=$status or '';?>&category=<?=$category or '';?>" class="<?=$bucket['from'] == $startPrice && $bucket['to'] == $endPrice ? 'active' : '';?>">
-                        <?=$bucket['from']?> - <?=$bucket['to'];?> (<?=$bucket['doc_count'];?>)
+                    <a class="btn btn-primary btn-sm" href="?query=<?=$query;?>&page=<?=$page;?>&startprice=<?=$bucket['from'];?>&endprice=<?=$bucket['to'];?>&status=<?=$status or '';?>&category=<?=$category or '';?>" class="<?=$bucket['from'] == $startPrice && $bucket['to'] == $endPrice ? 'active' : '';?>">
+                        $<?=$bucket['from']?> - $<?=$bucket['to'];?> (Total: <?=$bucket['doc_count'];?>)
                     </a>
                 <?php endforeach;?>
 
@@ -87,10 +87,20 @@ require 'inc/search.php';
 
                 <strong>Status:</strong>
 
+                        <?php
+                        // @DEBUG
+                        echo '<pre>';
+                        print_r($aggregations);
+                        echo '</pre>';
+                        ?>
+                @TODO  -  The count here is bugged (In code print_r) its an empty array, nothing to loop.
+                Something is off with the agg/agg/statuses/buckets being empty
                 <?php foreach ($aggregations['aggregations']['statuses']['buckets'] as $bucket):?>
                     <a href="?query=<?=$query;?>&page=<?=$page;?>&status=<?=urlencode($bucket['key']);?>&startprice=<?=$startPrice or '';?>&endprice=<?=$endPrice or '';?>&category=<?=$category or '';?>" class="<?=$bucket['key'] == $status ? 'active' : '';?>">
                         <?=ucfirst($bucket['key']);?> (<?=$bucket['doc_count'];?>)
                     </a>
+
+
                 <?php endforeach;?>
 
                 <br />
@@ -120,8 +130,17 @@ require 'inc/search.php';
                 <div class="col-xs-8 col-xs-offset-2">
                     <div class="panel panel-default">
                         <div class="panel-heading">
-                            <a href="/product/view/<?=$hit['_id'];?>"><?=$hit['_source']['name'];?></a>
+                             <a href="/product/view/<?=$hit['_id'];?>"><?=$hit['_source']['name'];?></a>
+                             <span class="pull-right badge">id: <?=$hit['_id'];?></span>
                         </div>
+
+
+                        <?php
+                        // @DEBUG
+//                        echo '<pre>';
+//                        print_r($hit['_source']);
+//                        echo '</pre>';
+                        ?>
 
                         <div class="panel-body">
                             <p><?=$hit['_source']['description'];?></p>
@@ -199,6 +218,10 @@ require 'inc/search.php';
 
 <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
 <script src="assets/third-party/js/ie10-viewport-bug-workaround.js"></script>
+
+<!-- Custom JS-->
+<script src="assets/js/app.js"></script>
+
 
 </body>
 </html>

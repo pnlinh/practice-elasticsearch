@@ -40,31 +40,50 @@ $client = getElasticClient(ES_HOSTS);
 define('RESULTS_PER_PAGE', 5);
 
 // Variables are output on the page and used for:
-//  pagination, query display, prices, and other various display items
+// such as: pagination, query display, prices, and other various display items
 $variables = [];
 
 
+// This is just a rigged $_GET method :) @ the bottom of file.
 $request = new Request();
 
 
-
+// We try to run an Elastic Query if ?query=<string> exists in the URI
 if ($query = $request->query('query')) {
+
+    // Get our Query (the <form> posts ?query=xyz&page=<0-9>
     $query = trim($query);
     $page = $request->query('page', 1);
-    $from = (($page - 1) * RESULTS_PER_PAGE);
+    $from = (($page - 1) * RESULTS_PER_PAGE);   // start/from is the same as LIMIT 0,10 in SQL
 
+    // Don't let from be negative
+    $from = ($from < 0) ? 0 : $from;
+
+
+    // Variables are for view display
     $variables['page'] = $page;
     $variables['from'] = $from;
     $variables['query'] = $query;
 
+    // This dynamically creates an array of search terms to match.
+    // We need a template to rebuild upon for many options, it starts here:
     $queryArray = [
         'bool' => [
             'must' => [],
             'filter' => [],
         ],
     ];
+
+    // (+) Our query might contain: "the dog jumps",
+    //     We turn this into: ['the', 'dog', 'jumps']
     $tokens = explode(' ', $query);
 
+    // We now create a set of rules to match for each word above.
+    // (+) If there were three terms (token), this adds three blocks of ['match' => ...]
+    //
+    // (+) fuzziness allows there to be a spelling error,
+    //      'AUTO' defaults to 1
+    //      You can use an integer, such as for 3 for 3 characters.
     foreach ($tokens as $token) {
         $queryArray['bool']['must'][] = [
             'match' => [
@@ -76,14 +95,22 @@ if ($query = $request->query('query')) {
         ];
     }
 
-//    $variables['aggregations'] = getSearchFilterAggregations($queryArray);
+    // (+) Aggregations puts our items into "Buckets", more specifically an array of many buckets.
+    //      such as: [bucket => ...the data we want here... ]
+    //
+    // (!) These are like building blocks to make queries more and more complex. You can keep nesting
+    //     aggs (short name) to get very granualry
+    //
+    // (+) This applies all the rules above that we had.
+    $variables['aggregations'] = getSearchFilterAggregations($queryArray);
 
-    /* Filters */
+    // Filter
     $startPrice = $request->query('startprice');
     $endPrice = $request->query('endprice');
     $status = $request->query('status');
     $category = $request->query('category');
 
+    // Variables are for view display
     $variables['startPrice'] = $startPrice;
     $variables['endPrice'] = $endPrice;
     $variables['status'] = $status;
@@ -129,8 +156,8 @@ if ($query = $request->query('query')) {
         'type' => 'product',
         'body' => [
             'query' => $queryArray,
-//            'size' => RESULTS_PER_PAGE,
-//            'from' => $from,
+            'size' => RESULTS_PER_PAGE,
+            'from' => $from,
         ],
     ];
 
@@ -146,6 +173,10 @@ if ($query = $request->query('query')) {
         $variables['hits'] = $result['hits']['hits'];
     }
 
+    // So I can use the actual variable name, varvar, lol.
+    foreach ($variables as $key => $value) {
+        $$key = $value;
+    }
 }
 
 /**
@@ -165,7 +196,7 @@ function getSearchFilterAggregations(array $queryArray)
             'size' => 0,
             'aggs' => [
                 'statuses' => [
-                    'terms' => [ 'field' => 'status' ]
+                    'terms' => [ 'field' => 'status.keyword' ]
                 ],
 
                 'price_ranges' => [
@@ -186,7 +217,7 @@ function getSearchFilterAggregations(array $queryArray)
                     ],
                     'aggs' => [
                         'categories_count' => [
-                            'terms' => [ 'field' => 'categories.name' ]
+                            'terms' => [ 'field' => 'categories.name.keyword' ]
                         ],
 
                     ],
@@ -227,7 +258,7 @@ class Request
      * @param $param The name of the $_GET value
      * @return bool|string
      */
-    public function query($param) {
-      return isset($_GET[$param]) ? trim($_GET[$param]) : false;
+    public function query($param, $default = false) {
+      return isset($_GET[$param]) ? trim($_GET[$param]) : $default;
     }
 }
