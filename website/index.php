@@ -78,6 +78,9 @@ require 'api/api-search.php';
                 <b>Issues:</b> When aggregating a category it only applies to the current paginated result, would like to apply to all results.
                 Does not seem to operate right. The pagination also fails with the subcategories.
             </div>
+            <div class="alert alert-danger">
+                <b>Issues:</b> Need to keep the aggregation attached in a list, not only one agg.
+            </div>
         </div>
     </div>
 
@@ -91,7 +94,7 @@ require 'api/api-search.php';
                     </div>
                     <div class="col-md-9">
                         <?php foreach ($aggregations['aggregations']['price_ranges']['buckets'] as $bucket):?>
-                            <a class="btn btn-default btn-xs" href="?query=<?=$query;?>&page=<?=$page;?>&startprice=<?=$bucket['from'];?>&endprice=<?=$bucket['to'];?>&status=<?=$status or '';?>&category=<?=$category or '';?>" class="<?=$bucket['from'] == $startPrice && $bucket['to'] == $endPrice ? 'active' : '';?>">
+                            <a class="btn btn-default btn-xs" href="<?=$query_string(['startprice' => $bucket['from'], 'endprice' => $bucket['to']])?>" class="<?=$bucket['from'] == $startPrice && $bucket['to'] == $endPrice ? 'active' : '';?>">
                                 $<?=$bucket['from']?> - $<?=$bucket['to'];?> (<b><?=$bucket['doc_count'];?></b>)
                             </a>
                         <?php endforeach;?>
@@ -108,7 +111,7 @@ require 'api/api-search.php';
                     </div>
                     <div class="col-md-9 text-align: left">
                     <?php foreach ($aggregations['aggregations']['statuses']['buckets'] as $bucket):?>
-                        <a class="btn btn-default btn-xs" href="?query=<?=$query;?>&page=<?=$page;?>&status=<?=urlencode($bucket['key']);?>&startprice=<?=$startPrice or '';?>&endprice=<?=$endPrice or '';?>&category=<?=$category or '';?>" class="<?=$bucket['key'] == $status ? 'active' : '';?>">
+                        <a class="btn btn-default btn-xs" href="<?=$query_string(['status' => $bucket['key']])?>" class="<?=$bucket['key'] == $status ? 'active' : '';?>">
                             <?=ucfirst($bucket['key']);?> (<b><?=$bucket['doc_count'];?></b>)
                         </a>
                     <?php endforeach;?>
@@ -125,7 +128,7 @@ require 'api/api-search.php';
                     </div>
                     <div class="col-md-9 text-align: left">
                         <?php foreach ($aggregations['aggregations']['categories']['categories_count']['buckets'] as $bucket):?>
-                            <a class="btn btn-primary btn-xs"  href="?query=<?=$query;?>&page=<?=$page;?>&category=<?=urlencode($bucket['key']);?>&status=<?=$status or '';?>&startprice=<?=$startPrice or '';?>&endprice=<?=$endPrice or '';?>" class="<?=$bucket['key'] == $category ? 'active' : '';?>">
+                            <a class="btn btn-primary btn-xs"  href="<?=$query_string(['category' => $bucket['key']])?>" class="<?=$bucket['key'] == $category ? 'active' : '';?>">
                                 <?=ucfirst($bucket['key']);?> (<b><?=$bucket['doc_count'];?></b>)
                             </a>
                         <?php endforeach;?>
@@ -187,8 +190,9 @@ require 'api/api-search.php';
                             </a>
                         </li>
 
-                        <?php for ($i = 1; $i <= 10; $i++): ?>
-                            <li <?=($i == $page) ? 'class="active"' : '';?>><a href="?query=<?=urlencode($query);?>&page=<?=$i;?>&status=<?=$status or '';?>&startprice=<?=$startPrice or '';?>&endprice=<?=$endPrice or '';?>&category=<?=$category or '';?>"><?=$i;?></a></li>
+
+                        <?php for ($i = 1; $i <= $page_count; $i++): ?>
+                            <li <?=($i == $page) ? 'class="active"' : '';?>><a href="<?=$query_string?>"><?=$i;?></a></li>
                         <?php endfor;?>
 
                         <li>
@@ -205,7 +209,9 @@ require 'api/api-search.php';
     <?php elseif (isset($hits)): ?>
         <div class="row" id="no-results">
             <div class="col-xs-6 col-xs-offset-3">
-                <p>No results!</p>
+                <div class="alert alert-warning">
+                    <p>No results</p>
+                </div>
             </div>
         </div>
     <?php endif;?>

@@ -110,9 +110,10 @@ if ($query = $request->query('query')) {
 
     // Filter
     $startPrice = $request->query('startprice');
-    $endPrice = $request->query('endprice');
-    $status = $request->query('status');
-    $category = $request->query('category');
+    $endPrice   = $request->query('endprice');
+    $status     = $request->query('status');
+    $category   = $request->query('category');
+
 
     // Variables are for view display
     $variables['startPrice'] = $startPrice;
@@ -172,7 +173,43 @@ if ($query = $request->query('query')) {
 
     $to = ($page * RESULTS_PER_PAGE);
     $to = ($to > $total ? $total : $to);
+
+    $page_count = ceil($total / RESULTS_PER_PAGE);
+
     $variables['to'] = $to;
+
+//    print_r($variables);
+
+
+    // start:QueryStringBuilder
+    /**
+     * Use to make query string building simpler.
+     * @param array|bool $replace Array (One or Many)
+     * @return string Returns QueryString with Array replacement
+     */
+    $query_array = [
+        'query' => $query,
+        'page' => $page,
+        'status' => $status,
+        'startprice' => $startPrice,
+        'endprice' => $endPrice,
+        'category' => $category,
+    ];
+
+    // Pass an array for replacing
+    $variables['query_string'] = function($replace_or_add = false) use ($query_array) {
+        if (replace_or_add) {
+            // We loop as there may be many!
+            foreach($replace_or_add as $key => $value) {
+                // This will replace, or add
+                $query_array[$key] = $value;
+            }
+        }
+
+        return "?" . http_build_query($query_array);
+    };
+    // end:QueryStringBuilder
+
 
     if (isset($result['hits']['hits'])) {
         $variables['hits'] = $result['hits']['hits'];
