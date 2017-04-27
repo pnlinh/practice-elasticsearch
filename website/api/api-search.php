@@ -144,16 +144,22 @@ if ($query = $request->query('query')) {
 
     // Category
     if ($category) {
-        $queryArray['bool']['filter'][] = [
-            'nested' => [
-                'path' => 'categories',
-                'query' => [
-                    'term' => [
-                        'categories.name.keyword' => $category,
+        // @TODO multi category narrowing down
+        // This comes from a URI so I can use a CSV to do this.
+        $category_list = explode(',', $category);
+
+        foreach ($category_list as $category) {
+            $queryArray['bool']['filter'][] = [
+                'nested' => [
+                    'path' => 'categories',
+                    'query' => [
+                        'term' => [
+                            'categories.name.keyword' => $category,
+                        ],
                     ],
                 ],
-            ],
-        ];
+            ];
+        }
     }
 
     $params = [
@@ -198,6 +204,13 @@ if ($query = $request->query('query')) {
         if ($replace_or_add) {
             // We loop as there may be many!
             foreach($replace_or_add as $key => $value) {
+                // This isnt right lol, this is so hackish :D
+//                if ( array_key_exists('category', $query_array )) {
+//                    if ($query_array['category'] !== $value) {
+//                        $query_array['category'] += ",$value";
+//                        ChromePhp::log($query_array['category']);
+//                    }
+//                }
                 // This will replace, or add
                 $query_array[$key] = $value;
             }
