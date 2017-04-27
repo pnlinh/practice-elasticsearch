@@ -44,7 +44,7 @@ require 'api/api-search.php';
     <div class="container">
     <div class="navbar-header">
         <!-- No Small Navigation needed -->
-        <a class="navbar-brand" href="#"><b>Elastic Search</b> PHP Example</a>
+        <a class="navbar-brand" href="index.php"><b>Elastic Search</b> PHP Example</a>
     </div>
     </div>
 </nav>
@@ -75,11 +75,17 @@ require 'api/api-search.php';
     <div class="row">
         <div class="col-md-8 col-md-offset-2">
             <div class="alert alert-danger">
-                <b>Issues:</b> When aggregating a category it only applies to the current paginated result, would like to apply to all results.
-                Does not seem to operate right. The pagination also fails with the subcategories.
+                <b>Wrong DATA:</b> The Category is just the TOTAL count of topics within the query. So if there are 21
+                results no category will have over 21 categories. HOWEVER it is NOT searching via Categories because the
+                search is for the TERMS and Categories is NESTED not a TERM I BELIEVE..
+
+                <p>
+                    NOTICE how the PRICE Works fine because its part mapped as an integer NOT a special nested type.
+                    so the PROBLEM is the NESTED type searching. NOW, I can rethink a bit.
+                </p>
             </div>
             <div class="alert alert-danger">
-                <b>Issues:</b> Need to keep the aggregation attached in a list, not only one agg.
+                <b>Issues:</b> I want to be able to filter down more SUBCATEGORIES, eg: Bread, Sports, etc in the URI.
             </div>
         </div>
     </div>

@@ -1,5 +1,6 @@
 {
     "require": {
-        "elasticsearch/elasticsearch": "^5.2"
+        "elasticsearch/elasticsearch": "^5.2",
+        "ccampbell/chromephp": "^4.1"
     }
 }

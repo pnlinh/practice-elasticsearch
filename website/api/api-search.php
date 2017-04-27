@@ -178,8 +178,6 @@ if ($query = $request->query('query')) {
 
     $variables['to'] = $to;
 
-//    print_r($variables);
-
 
     // start:QueryStringBuilder
     /**
@@ -198,13 +196,17 @@ if ($query = $request->query('query')) {
 
     // Pass an array for replacing
     $variables['query_string'] = function($replace_or_add = false) use ($query_array) {
-        if (replace_or_add) {
+        if ($replace_or_add) {
             // We loop as there may be many!
             foreach($replace_or_add as $key => $value) {
                 // This will replace, or add
                 $query_array[$key] = $value;
             }
         }
+
+        // remove empty values.
+        $query_array = array_filter($query_array);
+
 
         return "?" . http_build_query($query_array);
     };
@@ -235,7 +237,7 @@ function getSearchFilterAggregations(array $queryArray, $es_hosts = false)
         'type' => 'product',
         'body' => [
             'query' => $queryArray,
-            'size' => 0,  // Size is 0 for unlimited
+            //'size' => RESULTS_PER_PAGE,  // 0 will be NO RESULTS, defaults at 10
             'aggs' => [
                 'statuses' => [
                     // Mapped as a keyword, don't use .keyword
@@ -269,6 +271,8 @@ function getSearchFilterAggregations(array $queryArray, $es_hosts = false)
             ],
         ],
     ];
+
+    ChromePhp::log(json_encode($params));
 
     return $client->search($params);
 }
