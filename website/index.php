@@ -3,7 +3,7 @@
  * This makes our search work and supplies the variables.
  * I did not want to use MVC to keep it super simple.
  */
-require 'inc/search.php';
+require 'api/api-search.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -59,7 +59,7 @@ require 'inc/search.php';
         <div class="col-md-4">
             <!-- Notice we are using GET -->
             <form id="search-form" method="get" action="index.php">
-                <input type="text" id="search-query-input" name="query" class="input-lg" placeholder="Search..">
+                <input type="text" id="search-query-input" name="query" class="input-lg" placeholder="Search.." value="<?=$query?>">
                 <button id="search-query-btn" class="btn btn-lg btn-primary"><i class="fa fa-search" aria-hidden="true"></i></button>
             </form>
             <small>Try <code>bread</code> for an example</small>
@@ -71,47 +71,66 @@ require 'inc/search.php';
 <!-- start:Container -->
 <div class="container">
 
+
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            <div class="alert alert-danger">
+                <b>Issues:</b> When aggregating a category it only applies to the current paginated result, would like to apply to all results.
+                Does not seem to operate right. The pagination also fails with the subcategories.
+            </div>
+        </div>
+    </div>
+
     <!-- start:FilterDisplay -->
     <?php if (!empty($query)): ?>
         <div class="row" id="filters-wrapper">
-            <div class="col-xs-6 col-xs-offset-3">
-                <strong>Price:</strong>
+            <div class="col-md-8 col-md-offset-2">
+                <div class="row">
+                    <div class="col-md-1">
+                        <strong>Price</strong>
+                    </div>
+                    <div class="col-md-9">
+                        <?php foreach ($aggregations['aggregations']['price_ranges']['buckets'] as $bucket):?>
+                            <a class="btn btn-default btn-xs" href="?query=<?=$query;?>&page=<?=$page;?>&startprice=<?=$bucket['from'];?>&endprice=<?=$bucket['to'];?>&status=<?=$status or '';?>&category=<?=$category or '';?>" class="<?=$bucket['from'] == $startPrice && $bucket['to'] == $endPrice ? 'active' : '';?>">
+                                $<?=$bucket['from']?> - $<?=$bucket['to'];?> (<b><?=$bucket['doc_count'];?></b>)
+                            </a>
+                        <?php endforeach;?>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                <?php foreach ($aggregations['aggregations']['price_ranges']['buckets'] as $bucket):?>
-                    <a class="btn btn-primary btn-sm" href="?query=<?=$query;?>&page=<?=$page;?>&startprice=<?=$bucket['from'];?>&endprice=<?=$bucket['to'];?>&status=<?=$status or '';?>&category=<?=$category or '';?>" class="<?=$bucket['from'] == $startPrice && $bucket['to'] == $endPrice ? 'active' : '';?>">
-                        $<?=$bucket['from']?> - $<?=$bucket['to'];?> (Total: <?=$bucket['doc_count'];?>)
-                    </a>
-                <?php endforeach;?>
+        <div class="row" id="filters-wrapper">
+            <div class="col-md-8 col-md-offset-2">
+                <div class="row">
+                    <div class="col-md-1">
+                        <strong>Status</strong>
+                    </div>
+                    <div class="col-md-9 text-align: left">
+                    <?php foreach ($aggregations['aggregations']['statuses']['buckets'] as $bucket):?>
+                        <a class="btn btn-default btn-xs" href="?query=<?=$query;?>&page=<?=$page;?>&status=<?=urlencode($bucket['key']);?>&startprice=<?=$startPrice or '';?>&endprice=<?=$endPrice or '';?>&category=<?=$category or '';?>" class="<?=$bucket['key'] == $status ? 'active' : '';?>">
+                            <?=ucfirst($bucket['key']);?> (<b><?=$bucket['doc_count'];?></b>)
+                        </a>
+                    <?php endforeach;?>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                <br />
-
-                <strong>Status:</strong>
-
-                        <?php
-                        // @DEBUG
-                        echo '<pre>';
-                        print_r($aggregations);
-                        echo '</pre>';
-                        ?>
-                @TODO  -  The count here is bugged (In code print_r) its an empty array, nothing to loop.
-                Something is off with the agg/agg/statuses/buckets being empty
-                <?php foreach ($aggregations['aggregations']['statuses']['buckets'] as $bucket):?>
-                    <a href="?query=<?=$query;?>&page=<?=$page;?>&status=<?=urlencode($bucket['key']);?>&startprice=<?=$startPrice or '';?>&endprice=<?=$endPrice or '';?>&category=<?=$category or '';?>" class="<?=$bucket['key'] == $status ? 'active' : '';?>">
-                        <?=ucfirst($bucket['key']);?> (<?=$bucket['doc_count'];?>)
-                    </a>
-
-
-                <?php endforeach;?>
-
-                <br />
-
-                <strong>Category:</strong>
-
-                <?php foreach ($aggregations['aggregations']['categories']['categories_count']['buckets'] as $bucket):?>
-                    <a href="?query=<?=$query;?>&page=<?=$page;?>&category=<?=urlencode($bucket['key']);?>&status=<?=$status or '';?>&startprice=<?=$startPrice or '';?>&endprice=<?=$endPrice or '';?>" class="<?=$bucket['key'] == $category ? 'active' : '';?>">
-                        <?=ucfirst($bucket['key']);?> (<?=$bucket['doc_count'];?>)
-                    </a>
-                <?php endforeach;?>
+        <div class="row" id="filters-wrapper">
+            <div class="col-md-8 col-md-offset-2">
+                <div class="row">
+                    <div class="col-md-1">
+                        <strong>Category</strong>
+                    </div>
+                    <div class="col-md-9 text-align: left">
+                        <?php foreach ($aggregations['aggregations']['categories']['categories_count']['buckets'] as $bucket):?>
+                            <a class="btn btn-primary btn-xs"  href="?query=<?=$query;?>&page=<?=$page;?>&category=<?=urlencode($bucket['key']);?>&status=<?=$status or '';?>&startprice=<?=$startPrice or '';?>&endprice=<?=$endPrice or '';?>" class="<?=$bucket['key'] == $category ? 'active' : '';?>">
+                                <?=ucfirst($bucket['key']);?> (<b><?=$bucket['doc_count'];?></b>)
+                            </a>
+                        <?php endforeach;?>
+                    </div>
+                </div>
             </div>
         </div>
     <?php endif;?>
@@ -121,7 +140,9 @@ require 'inc/search.php';
     <?php if (!empty($hits)): ?>
         <div class="row" id="results-text">
             <div class="col-xs-8 col-xs-offset-2">
-                Displaying results <?=($from + 1);?> to <?=$to;?> of <?=$total;?>.
+                <div class="alert alert-info text-center">
+                    Displaying results <?=($from + 1);?> to <?=$to;?> of <?=$total;?>.
+                </div>
             </div>
         </div>
 
@@ -130,17 +151,9 @@ require 'inc/search.php';
                 <div class="col-xs-8 col-xs-offset-2">
                     <div class="panel panel-default">
                         <div class="panel-heading">
-                             <a href="/product/view/<?=$hit['_id'];?>"><?=$hit['_source']['name'];?></a>
+                             <a href="single-item.php?product_id=<?=$hit['_id'];?>&query=<?=$query?>"><?=$hit['_source']['name'];?></a>
                              <span class="pull-right badge">id: <?=$hit['_id'];?></span>
                         </div>
-
-
-                        <?php
-                        // @DEBUG
-//                        echo '<pre>';
-//                        print_r($hit['_source']);
-//                        echo '</pre>';
-                        ?>
 
                         <div class="panel-body">
                             <p><?=$hit['_source']['description'];?></p>
@@ -149,11 +162,13 @@ require 'inc/search.php';
                             <br />
                             <strong>Status:</strong> <?=ucfirst($hit['_source']['status']);?>
                             <br />
+
                             <strong>Categories:</strong>
 
                             <?php foreach ($hit['_source']['categories'] as $c):?>
                                 <?=$c['name'];?> &nbsp;
                             <?php endforeach;?>
+
                         </div>
                     </div>
                 </div>

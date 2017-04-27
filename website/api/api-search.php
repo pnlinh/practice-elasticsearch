@@ -21,16 +21,12 @@
  */
 
 /**
- * Require Autoloader
- * @depends elasticsearch/elasticsearch
+ * Required Files
+ * @desc Purposely included this; So it's obvious what I'm doing.
  */
 require 'vendor/autoload.php';
-
-// Yep, PHP 7 Constant array.
-define('ES_HOSTS', ['localhost:9200']);
-
-// Get ElasticSearch Instance
-$client = getElasticClient(ES_HOSTS);
+require 'libs/request.php';  // A $request->query() wrapper for $_GET
+require 'libs/client.php';   // The Elastic Client
 
 /**
  * ------------------------------------------------------------------
@@ -50,6 +46,14 @@ $request = new Request();
 
 // We try to run an Elastic Query if ?query=<string> exists in the URI
 if ($query = $request->query('query')) {
+
+    // ** Only Get Elastic if a query is loaded up **
+    // Removed PHP7 constant incase someones on php5.
+    // (Used in two places in this file)
+    $es_hosts = ['localhost:9200'];
+
+    // Get ElasticSearch Instance
+    $client = getElasticClient($es_hosts);
 
     // Get our Query (the <form> posts ?query=xyz&page=<0-9>
     $query = trim($query);
@@ -102,7 +106,7 @@ if ($query = $request->query('query')) {
     //     aggs (short name) to get very granualry
     //
     // (+) This applies all the rules above that we had.
-    $variables['aggregations'] = getSearchFilterAggregations($queryArray);
+    $variables['aggregations'] = getSearchFilterAggregations($queryArray, $es_hosts);
 
     // Filter
     $startPrice = $request->query('startprice');
@@ -145,6 +149,7 @@ if ($query = $request->query('query')) {
                 'query' => [
                     'term' => [
                         'categories.name' => $category,
+//                        'categories.name.keyword' => $category,
                     ],
                 ],
             ],
@@ -184,21 +189,23 @@ if ($query = $request->query('query')) {
  * Functions
  * ------------------------------------------------------------------
  */
-function getSearchFilterAggregations(array $queryArray)
+function getSearchFilterAggregations(array $queryArray, $es_hosts = false)
 {
-    $client = getElasticClient(ES_HOSTS);
+    $client = getElasticClient($es_hosts);
 
     $params = [
         'index' => 'ecommerce',
         'type' => 'product',
         'body' => [
             'query' => $queryArray,
-            'size' => 0,
+            'size' => 0,  // Size is 0 for unlimited
             'aggs' => [
                 'statuses' => [
-                    'terms' => [ 'field' => 'status.keyword' ]
+                    // Mapped as a keyword, don't use .keyword
+                    'terms' => [ 'field' => 'status' ]
                 ],
 
+                // Aggregated Price Range (per Bucket applied to each Query)
                 'price_ranges' => [
                     'range' => [
                         'field' => 'price',
@@ -211,6 +218,7 @@ function getSearchFilterAggregations(array $queryArray)
                     ],
                 ],
 
+                // Aggregated Categories (per Bucket applied to each Query)
                 'categories' => [
                     'nested' => [
                         'path' => 'categories',
@@ -219,11 +227,8 @@ function getSearchFilterAggregations(array $queryArray)
                         'categories_count' => [
                             'terms' => [ 'field' => 'categories.name.keyword' ]
                         ],
-
                     ],
                 ],
-
-
             ],
         ],
     ];
@@ -231,34 +236,3 @@ function getSearchFilterAggregations(array $queryArray)
     return $client->search($params);
 }
 
-/**
- * Quick and Sloppy way to get the Client.
- * Need it to use within a function, not writing closures either.
- */
-function getElasticClient(array $hosts=[])
-{
-    return \Elasticsearch\ClientBuilder::create()
-        ->setHosts($hosts)
-        ->setRetries(2)
-        ->build();
-}
-
-/**
- * ------------------------------------------------------------------
- * Classes
- * ------------------------------------------------------------------
- */
-
-/**
- * Quick Ad-Hoc way to snag GET values without replacing all the code, lol.
- */
-class Request
-{
-    /**
-     * @param $param The name of the $_GET value
-     * @return bool|string
-     */
-    public function query($param, $default = false) {
-      return isset($_GET[$param]) ? trim($_GET[$param]) : $default;
-    }
-}
