@@ -149,8 +149,7 @@ if ($query = $request->query('query')) {
                 'path' => 'categories',
                 'query' => [
                     'term' => [
-                        'categories.name' => $category,
-//                        'categories.name.keyword' => $category,
+                        'categories.name.keyword' => $category,
                     ],
                 ],
             ],
@@ -277,3 +276,18 @@ function getSearchFilterAggregations(array $queryArray, $es_hosts = false)
     return $client->search($params);
 }
 
+//function globalCategoryFilterAggs($data = false, $es_hosts) {
+//
+//    $client = getElasticClient($es_hosts);
+//
+//    $params = [
+//    "aggs" : {
+//        "t_shirts" : {
+//            "filter" : { "term": { "type": "t-shirt" } },
+//            "aggs" : {
+//                "avg_price" : { "avg" : { "field" : "price" } }
+//            }
+//        }
+//    }
+//    return $client->search($params);
+//}

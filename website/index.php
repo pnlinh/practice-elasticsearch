@@ -75,17 +75,13 @@ require 'api/api-search.php';
     <div class="row">
         <div class="col-md-8 col-md-offset-2">
             <div class="alert alert-danger">
-                <b>Wrong DATA:</b> The Category is just the TOTAL count of topics within the query. So if there are 21
-                results no category will have over 21 categories. HOWEVER it is NOT searching via Categories because the
-                search is for the TERMS and Categories is NESTED not a TERM I BELIEVE..
-
                 <p>
-                    NOTICE how the PRICE Works fine because its part mapped as an integer NOT a special nested type.
-                    so the PROBLEM is the NESTED type searching. NOW, I can rethink a bit.
+                Got the Category Aggs Working with `.keyword` mapping instead! Need to be able to add multiple categories
+                    per search, eg: `Facets`.
                 </p>
-            </div>
-            <div class="alert alert-danger">
-                <b>Issues:</b> I want to be able to filter down more SUBCATEGORIES, eg: Bread, Sports, etc in the URI.
+                <p>
+                    <b>TODO:</b> I want to be able to filter down more SUBCATEGORIES, eg: Bread, Sports, etc in the URI.
+                </p>
             </div>
         </div>
     </div>
@@ -190,11 +186,13 @@ require 'api/api-search.php';
             <div class="pagination-wrapper col-xs-8 col-xs-offset-2">
                 <nav>
                     <ul class="pagination">
+                        <?php if ($page > 1):?>
                         <li>
                             <a href="?query=<?=urlencode($query);?>&page=<?=($page - 1);?>" aria-label="Previous">
                                 <span aria-hidden="true">&laquo;</span>
                             </a>
                         </li>
+                        <?php endif;?>
 
 
                         <?php for ($i = 1; $i <= $page_count; $i++): ?>
