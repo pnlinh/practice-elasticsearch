@@ -1,9 +1,6 @@
 <?php
-/**
- * This makes our search work and supplies the variables.
- * I did not want to use MVC to keep it super simple.
- */
-require 'api/api-single-item.php';
+// Bootstrap loads the necessary files to Query.
+require 'src/bootstrap.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">

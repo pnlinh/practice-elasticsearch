@@ -1,32 +1,15 @@
 <?php
-/**
- * @critics
- * This is not meant to be beautiful, and it's not how I normally code.
- * I did not decouple functions or classes on purpose, let's chill. I could add
- * more composer packages for DI, or a Micro MVC but I have chosen not to so anyone
- * that looks at this will not have to try very hard!
- *
- * This just displays the use of ElasticSearch (ES) as minimally and simply as possible,
- *   and it's to be framework agnostic so it's any implementation can be done in your
- *   framework of choice.
- *
- * @notes
- * - I refactored the demonstration Source from Laravel to a Framework-less structure.
- * - Originatal source was by "Bo Andersen" in his course: "Complete Guide To Elasticsearch"
- * - I highly recommend this course for ElasticSearch:
- *   https://www.udemy.com/elasticsearch-complete-guide/learn/v4/overview
- *
- * @misc
- * - Function(s) and/or Class(es) are at The Bottom.
- */
 
 /**
  * Required Files
  * @desc Purposely included this; So it's obvious what I'm doing.
  */
-require 'vendor/autoload.php';
-require 'libs/request.php';  // A $request->query() wrapper for $_GET
-require 'libs/client.php';   // The Elastic Client
+
+require dirname(__DIR__) . '/vendor/autoload.php';
+require dirname(__DIR__) . '/src/request.php';  // A $request->query() wrapper for $_GET
+require dirname(__DIR__) . '/src/client.php';   // The Elastic Client
+
+
 
 /**
  * ------------------------------------------------------------------
@@ -54,6 +37,21 @@ if ($query = $request->query('query')) {
 
     // Get ElasticSearch Instance
     $client = getElasticClient($es_hosts);
+
+    // Get our Index/Type (Database/Table)
+    $es_index = 'inventory';
+    $es_type = 'product';
+
+    $index_and_type = [
+        'index' => $es_index,
+        'type' => $es_type
+    ];
+
+//    $es_type = $request->query('subcategory', 'manufacturer');
+//    if ( ! in_array($es_type, ['manufacturer', 'featured', 'firearms'])) {
+//        throw new \InvalidArgumentException('Must be one of: manufacturer, featured, firearms');
+//    }
+
 
     // Get our Query (the <form> posts ?query=xyz&page=<0-9>
     $query = trim($query);
@@ -106,7 +104,7 @@ if ($query = $request->query('query')) {
     //     aggs (short name) to get very granualry
     //
     // (+) This applies all the rules above that we had.
-    $variables['aggregations'] = getSearchFilterAggregations($queryArray, $es_hosts);
+    $variables['aggregations'] = getSearchFilterAggregations($queryArray, $es_hosts, $index_and_type);
 
     // Filter
     $startPrice = $request->query('startprice');
@@ -120,6 +118,7 @@ if ($query = $request->query('query')) {
     $variables['endPrice'] = $endPrice;
     $variables['status'] = $status;
     $variables['category'] = $category;
+    $variables['subcategory'] = $es_type;
 
     // Price
     if ($startPrice && $endPrice) {
@@ -143,28 +142,28 @@ if ($query = $request->query('query')) {
     }
 
     // Category
-    if ($category) {
-        // @TODO multi category narrowing down
-        // This comes from a URI so I can use a CSV to do this.
-        $category_list = explode(',', $category);
-
-        foreach ($category_list as $category) {
-            $queryArray['bool']['filter'][] = [
-                'nested' => [
-                    'path' => 'categories',
-                    'query' => [
-                        'term' => [
-                            'categories.name.keyword' => $category,
-                        ],
-                    ],
-                ],
-            ];
-        }
-    }
+//    if ($category) {
+//        // @TODO multi category narrowing down
+//        // This comes from a URI so I can use a CSV to do this.
+//        $category_list = explode(',', $category);
+//
+//        foreach ($category_list as $category) {
+//            $queryArray['bool']['filter'][] = [
+//                'nested' => [
+//                    'path' => 'categories',
+//                    'query' => [
+//                        'term' => [
+//                            'categories.name.keyword' => $category,
+//                        ],
+//                    ],
+//                ],
+//            ];
+//        }
+//    }
 
     $params = [
-        'index' => 'ecommerce',
-        'type' => 'product',
+        'index' => $es_index,
+        'type' => $es_type,
         'body' => [
             'query' => $queryArray,
             'size' => RESULTS_PER_PAGE,
@@ -240,13 +239,13 @@ if ($query = $request->query('query')) {
  * Functions
  * ------------------------------------------------------------------
  */
-function getSearchFilterAggregations(array $queryArray, $es_hosts = false)
+function getSearchFilterAggregations(array $queryArray, $es_hosts = false, array $index_and_type = [])
 {
     $client = getElasticClient($es_hosts);
 
     $params = [
-        'index' => 'ecommerce',
-        'type' => 'product',
+        'index' => $index_and_type['index'],
+        'type' => $index_and_type['type'],
         'body' => [
             'query' => $queryArray,
             //'size' => RESULTS_PER_PAGE,  // 0 will be NO RESULTS, defaults at 10

@@ -1,9 +1,6 @@
 <?php
-/**
- * This makes our search work and supplies the variables.
- * I did not want to use MVC to keep it super simple.
- */
-require 'api/api-search.php';
+// Bootstrap loads the necessary files to Query.
+require 'src/bootstrap.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -127,13 +124,13 @@ require 'api/api-search.php';
                 <div class="row">
                     <div class="col-md-1">
                         <strong>Category</strong>
+                        <?php getCategories();?>
                     </div>
-                    <div class="col-md-9 text-align: left">
-                        <?php foreach ($aggregations['aggregations']['categories']['categories_count']['buckets'] as $bucket):?>
-                            <a class="btn btn-primary btn-xs"  href="<?=$query_string(['category' => $bucket['key']])?>" class="<?=$bucket['key'] == $category ? 'active' : '';?>">
-                                <?=ucfirst($bucket['key']);?> (<b><?=$bucket['doc_count'];?></b>)
-                            </a>
-                        <?php endforeach;?>
+                </div>
+                <div class="row">
+                    <div class="col-md-1">
+                        <strong>Manufacturers</strong>
+                        <?php getManufacturers();?>
                     </div>
                 </div>
             </div>
@@ -228,10 +225,7 @@ require 'api/api-search.php';
 
 <footer>
     <div class="container">
-        <p>
-            <a href="../LICENSE">Open Source MIT</a>
-            &copy;2017 Jesse Boyer | <a href="https://jream.com" target="_blank">JREAM</a>
-            </p>
+        Footer
     </div> <!-- /container -->
 </footer>
 
